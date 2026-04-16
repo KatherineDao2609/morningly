@@ -288,6 +288,13 @@ select {
   color: var(--muted-letter);
 }
 
+.day-skip {
+  background: var(--cream);
+  border: 1.5px dashed var(--grey);
+  color: var(--grey);
+  opacity: 0.8;
+}
+
 .day-ring-wrap {
   position: relative;
   width: 30px;

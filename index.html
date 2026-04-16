@@ -63,36 +63,44 @@
         width: 100%;
       }
 
-      /* ── Skip notification ──────────────────────────────── */
-      .skip-notif {
+      /* ── Skip inline notification card ─────────────────── */
+      .skip-inline-notif {
         width: 100%;
         background: var(--card-tan);
-        border-radius: 15px;
-        padding: 16px 20px;
+        border-radius: 10px;
+        padding: 10px 16px;
         display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
+        flex-direction: column;
+        gap: 6px;
       }
-      .skip-notif p {
-        font-size: 15px;
+      .skip-inline-notif p {
+        font-size: 16px;
         font-weight: 400;
         color: var(--ink);
         margin: 0;
         line-height: 1.4;
-        flex: 1;
       }
-      .skip-notif-undo {
-        font-size: 14px;
+      .skip-inline-undo {
+        align-self: flex-end;
+        font-size: 13px;
         font-weight: 700;
         color: var(--ink);
         border: none;
         background: transparent;
         cursor: pointer;
         font-family: inherit;
-        white-space: nowrap;
-        text-decoration: underline;
-        flex-shrink: 0;
+        text-align: right;
+      }
+
+      /* ── Micro-treat nudge inside skip card ─────────────── */
+      .skip-micro-link {
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--muted-letter);
+        text-decoration: none;
+        border-bottom: 1px solid var(--grey);
+        align-self: flex-start;
+        line-height: 1.4;
       }
 
       /* ── add treats link ────────────────────────────────── */
@@ -366,9 +374,16 @@
                 </div>
                 <div class="treat-cta-group">
                   <a class="cta-start" id="home-cta" href="timer.html">Let's start</a>
-                  <button type="button" class="skip-treat-btn" id="default-skip-btn">Skip for now</button>
+                  <button type="button" class="skip-treat-btn" id="default-skip-btn">I want to skip</button>
                 </div>
               </article>
+
+              <!-- Default card skip notification (in-place) -->
+              <div class="skip-inline-notif" id="default-skip-notif" style="display:none;" role="status">
+                <p id="default-skip-msg"></p>
+                <a href="prep-simple.html" class="skip-micro-link">Or — just 2 minutes? →</a>
+                <button type="button" class="skip-inline-undo" id="default-undo-btn">Undo</button>
+              </div>
 
               <!-- Dynamic treat stack -->
               <div id="treat-stack"></div>
@@ -377,12 +392,6 @@
               <p id="empty-treats-msg" style="display:none; margin:0; font-size:15px; font-weight:400; color:var(--muted-letter); line-height:1.5; text-align:center; padding:4px 0;">
                 No treat lined up for tomorrow yet —<br>feel free to gift yourself something little ✨
               </p>
-
-              <!-- Skip notification with undo -->
-              <div class="skip-notif" id="skip-notif" style="display:none;" role="status">
-                <p>No worries — your morning is still yours. ☀️</p>
-                <button type="button" class="skip-notif-undo" id="skip-undo-btn">Undo</button>
-              </div>
 
               <div class="add-treats">
                 <img
@@ -535,48 +544,70 @@
         /* ── Morning vs night (before noon = morning) ────────── */
         function isMorning() { return new Date().getHours() < 12; }
 
-        /* ── Skip notification + undo ────────────────────────── */
-        var skipNotif     = document.getElementById("skip-notif");
-        var skipUndoBtn   = document.getElementById("skip-undo-btn");
-        var lastSkipIdx   = null;
-        var lastSkipDefault = false;
-        var undoTimer     = null;
-
-        function showSkipNotif(treatIdx, isDefault) {
-          lastSkipIdx     = treatIdx;
-          lastSkipDefault = isDefault || false;
-          skipNotif.style.display = "flex";
-          if (undoTimer) clearTimeout(undoTimer);
-          undoTimer = setTimeout(function () {
-            skipNotif.style.display = "none";
-            lastSkipIdx = null;
-          }, 5000);
+        /* ── Skip messages (rotating) ───────────────────────── */
+        var SKIP_MSGS = [
+          "It\u2019s okay to take a break, the morning is still yours.",
+          "Rest is part of the process too.",
+          "You showed up. That already counts.",
+          "Some mornings are just for being. That\u2019s enough.",
+          "Tomorrow is another morning. No rush."
+        ];
+        function pickSkipMsg() {
+          return SKIP_MSGS[Math.floor(Math.random() * SKIP_MSGS.length)];
         }
 
-        skipUndoBtn.addEventListener("click", function () {
-          clearTimeout(undoTimer);
-          skipNotif.style.display = "none";
-          if (lastSkipDefault) {
-            var dc = document.getElementById("default-treat-card");
-            if (dc) dc.style.display = "";
-          } else if (lastSkipIdx !== null) {
-            var treats = getMorningTreats();
-            if (treats[lastSkipIdx]) {
-              treats[lastSkipIdx].status = "pending";
-              saveMorningTreats(treats);
-            }
+        /* ── Mark today as skipped on the streak row ─────────── */
+        function markSkipOnStreak() {
+          var todayEl = document.querySelector(".day-today");
+          if (todayEl) {
+            todayEl.classList.remove("day-done");
+            todayEl.classList.add("day-skip");
           }
-          lastSkipIdx = null;
-          renderAll();
-        });
+        }
+        function unmarkSkipOnStreak() {
+          var todayEl = document.querySelector(".day-today");
+          if (todayEl) {
+            todayEl.classList.remove("day-skip");
+            todayEl.classList.add("day-done");
+          }
+        }
 
-        /* Default card skip */
-        var defaultSkipBtn = document.getElementById("default-skip-btn");
+        /* ── Default card skip (in-place) ───────────────────── */
+        var defaultSkipBtn  = document.getElementById("default-skip-btn");
+        var defaultSkipNotif = document.getElementById("default-skip-notif");
+        var defaultUndoBtn  = document.getElementById("default-undo-btn");
+        var defaultUndoTimer = null;
+
         if (defaultSkipBtn) {
           defaultSkipBtn.addEventListener("click", function () {
             var dc = document.getElementById("default-treat-card");
             if (dc) dc.style.display = "none";
-            showSkipNotif(null, true);
+            /* Random message */
+            var msgEl = document.getElementById("default-skip-msg");
+            if (msgEl) msgEl.textContent = pickSkipMsg();
+            defaultSkipNotif.style.display = "flex";
+            defaultUndoBtn.style.display = "";
+            /* Mark streak + tonight */
+            sessionStorage.setItem("morningSkipped", "1");
+            markSkipOnStreak();
+            renderAll();
+            if (defaultUndoTimer) clearTimeout(defaultUndoTimer);
+            defaultUndoTimer = setTimeout(function () {
+              defaultUndoBtn.style.display = "none";
+            }, 5000);
+          });
+        }
+
+        if (defaultUndoBtn) {
+          defaultUndoBtn.addEventListener("click", function () {
+            clearTimeout(defaultUndoTimer);
+            defaultSkipNotif.style.display = "none";
+            var dc = document.getElementById("default-treat-card");
+            if (dc) dc.style.display = "";
+            /* Restore streak + tonight */
+            sessionStorage.removeItem("morningSkipped");
+            unmarkSkipOnStreak();
+            renderAll();
           });
         }
 
@@ -617,7 +648,7 @@
             '</div>' +
             '<div class="treat-cta-group">' +
               '<a class="cta-start dyn-start" href="timer.html">Let\u2019s start</a>' +
-              '<button type="button" class="skip-treat-btn dyn-skip">Skip for now</button>' +
+              '<button type="button" class="skip-treat-btn dyn-skip">I want to skip</button>' +
             '</div>';
 
           card.querySelector(".dyn-start").addEventListener("click", function (e) {
@@ -629,8 +660,41 @@
           card.querySelector(".dyn-skip").addEventListener("click", function () {
             var treats = getMorningTreats();
             if (treats[idx]) { treats[idx].status = "skipped"; saveMorningTreats(treats); }
-            showSkipNotif(idx, false);
+
+            /* Mark skip state */
+            sessionStorage.setItem("morningSkipped", "1");
+            markSkipOnStreak();
+
+            /* Build in-place notification */
+            var notif = document.createElement("div");
+            notif.className = "skip-inline-notif";
+            notif.setAttribute("role", "status");
+            notif.innerHTML =
+              '<p>' + pickSkipMsg() + '</p>' +
+              '<a href="prep-simple.html" class="skip-micro-link">Or \u2014 just 2 minutes? \u2192</a>' +
+              '<button type="button" class="skip-inline-undo">Undo</button>';
+
+            /* Replace card with notification in-place */
+            if (card.parentNode) card.parentNode.replaceChild(notif, card);
+
+            /* Update tonight section */
             renderAll();
+
+            /* Auto-hide Undo after 5 s */
+            var undoEl = notif.querySelector(".skip-inline-undo");
+            var t = setTimeout(function () {
+              if (undoEl) undoEl.style.display = "none";
+            }, 5000);
+
+            /* Undo: restore treat + re-render */
+            undoEl.addEventListener("click", function () {
+              clearTimeout(t);
+              var ts = getMorningTreats();
+              if (ts[idx]) { ts[idx].status = "pending"; saveMorningTreats(ts); }
+              sessionStorage.removeItem("morningSkipped");
+              unmarkSkipOnStreak();
+              renderAll();
+            });
           });
 
           return card;
@@ -702,6 +766,16 @@
           } else {
             tonightGeneric.style.display  = "";
             tonightPrepWrap.style.display = "none";
+            /* Warm message if user skipped this morning */
+            var tH3 = tonightGeneric.querySelector(".tonight-copy h3");
+            var tP  = tonightGeneric.querySelector(".tonight-copy p");
+            if (sessionStorage.getItem("morningSkipped") === "1") {
+              if (tH3) tH3.textContent = "You took a break today. Tonight, pick something just for you \u2728";
+              if (tP)  tP.textContent  = "No pressure \u2014 even something small counts.";
+            } else {
+              if (tH3) tH3.textContent = "What would feel nice tomorrow morning?";
+              if (tP)  tP.textContent  = "Pick something you\u2019d enjoy and you can set it up tonight if you like";
+            }
           }
         }
 
