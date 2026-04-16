@@ -1,0 +1,563 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Let's Prepare</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@100..900&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+    <style>
+      /* ── Scroll area ────────────────────────────────────── */
+      .pi-scroll {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 393px;
+        height: 756px;
+        overflow-y: auto;
+        overflow-x: hidden;
+        background: var(--cream);
+        scrollbar-width: none;
+      }
+      .pi-scroll::-webkit-scrollbar { display: none; }
+
+      /* ── Hero card ──────────────────────────────────────── */
+      .pi-hero {
+        position: relative;
+        width: 393px;
+        height: 304px; /* 240px visible + 64px safe area */
+        border-radius: 0 0 32px 32px;
+        flex-shrink: 0;
+        box-shadow: 0px 4px 9.5px 0px rgba(51, 51, 51, 0.2);
+        overflow: hidden;
+      }
+
+      /* "Let's prepare" dark badge */
+      .pi-hero-badge {
+        position: absolute;
+        left: 24px;
+        bottom: 124px;
+        background: var(--ink);
+        color: var(--cream);
+        font-size: 14px;
+        font-weight: 500;
+        line-height: 1.3;
+        padding: 4px 10px;
+        border-radius: 60px;
+        white-space: nowrap;
+      }
+
+      /* Treat name */
+      .pi-hero-title {
+        position: absolute;
+        left: 24px;
+        bottom: 24px;
+        margin: 0;
+        font-size: 38px;
+        font-weight: 600;
+        line-height: 1.15;
+        color: var(--ink);
+      }
+
+      /* Heart icon box */
+      .pi-hero-icon-box {
+        position: absolute;
+        top: 72px;
+        right: 24px;
+        width: 54px;
+        height: 54px;
+        background: var(--cream);
+        border-radius: 27px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        border: none;
+        cursor: pointer;
+        padding: 0;
+        transition: background 0.2s;
+      }
+      .pi-hero-icon-box.liked {
+        background: #4E4B3D;
+      }
+
+      /* ── Inner padded content ───────────────────────────── */
+      .pi-inner {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 40px;
+        padding: 40px 24px 48px;
+        width: 100%;
+      }
+
+      /* ── Motivation block ───────────────────────────────── */
+      .pi-motivation {
+        display: flex;
+        align-items: flex-end;
+        gap: 19px;
+        width: 100%;
+      }
+
+      .pi-motivation-icon {
+        flex-shrink: 0;
+        width: 54px;
+        height: 54px;
+        border-radius: 27px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 10px 12px;
+      }
+      .pi-motivation-icon img {
+        width: 24px;
+        height: 24px;
+        display: block;
+        object-fit: contain;
+      }
+
+      .pi-motivation-text {
+        margin: 0;
+        font-size: 17px;
+        font-weight: 500;
+        line-height: 1.3;
+        color: var(--muted-letter);
+        flex: 1;
+      }
+
+      /* ── Preparations section ───────────────────────────── */
+      .pi-preparations {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+        width: 100%;
+      }
+
+      .pi-section-label {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 700;
+        line-height: 1.3;
+        color: var(--ink);
+      }
+
+      .pi-checklist {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        width: 100%;
+      }
+
+      /* ── Checklist item ─────────────────────────────────── */
+      .pi-step {
+        width: 100%;
+        background: var(--card-tan);
+        border-radius: 10px;
+        padding: 16px 12px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        cursor: pointer;
+        border: none;
+        font-family: inherit;
+        text-align: left;
+        transition: background 0.2s;
+      }
+      .pi-step.checked { background: #e8e4d6; }
+
+      .pi-step-text {
+        margin: 0;
+        font-size: 15px;
+        font-weight: 500;
+        line-height: 1.3;
+        color: var(--muted-letter);
+        max-width: 260px;
+        transition: text-decoration 0.2s, opacity 0.2s;
+      }
+      .pi-step.checked .pi-step-text {
+        text-decoration: line-through;
+        opacity: 0.55;
+      }
+
+      .pi-step-circle {
+        flex-shrink: 0;
+        width: 32px;
+        height: 32px;
+        display: block;
+      }
+
+      /* ── CTA area ───────────────────────────────────────── */
+      .pi-cta-wrap {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+        width: 100%;
+      }
+
+      .pi-cta-btn {
+        width: 216px;
+        padding: 16px 64px;
+        border-radius: 100px;
+        background: var(--ink);
+        color: var(--cream);
+        border: none;
+        font-family: inherit;
+        font-size: 17px;
+        font-weight: 600;
+        line-height: normal;
+        cursor: pointer;
+        text-align: center;
+        white-space: nowrap;
+        opacity: 0.4;
+        transition: opacity 0.2s;
+      }
+      .pi-cta-btn.active { opacity: 1; }
+      .pi-cta-btn.morning { opacity: 1; }
+
+      .pi-remind-btn {
+        font-size: 17px;
+        font-weight: 500;
+        color: var(--grey);
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-family: inherit;
+        line-height: normal;
+        text-align: center;
+      }
+
+      /* ── Morning hint ───────────────────────────────────── */
+      .pi-morning-hint {
+        display: none;
+        font-size: 14px;
+        font-weight: 400;
+        color: var(--muted-letter);
+        text-align: center;
+        line-height: 1.3;
+        margin: 0;
+      }
+
+      /* ── Back button ────────────────────────────────────── */
+      .pi-back {
+        position: absolute;
+        top: 72px;
+        left: 24px;
+        z-index: 4;
+        display: flex;
+        align-items: center;
+        background: none;
+        border: none;
+        padding: 0;
+        cursor: pointer;
+        color: rgba(78, 75, 61, 0.75);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="device-shell">
+      <main class="phone">
+
+        <div class="top-safe" id="top-safe" style="background: transparent; z-index: 1;">
+          <div class="dynamic-island" aria-hidden="true"></div>
+        </div>
+
+        <button type="button" class="pi-back" onclick="history.back()" aria-label="Go back">
+          <svg width="10" height="18" viewBox="0 0 10 18" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M9 1L1 9L9 17" stroke="#4E4B3D" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+
+        <section class="pi-scroll" id="pi-scroll">
+          <!-- Hero card -->
+          <div class="pi-hero" id="pi-hero">
+            <button type="button" class="pi-hero-icon-box" id="pi-heart-btn" aria-label="Save to favourites" aria-pressed="false">
+              <svg id="pi-heart-svg" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <path d="M12 21L10.55 19.7C5.4 15.1 2 12.1 2 8.5C2 5.4 4.42 3 7.5 3C9.24 3 10.91 3.81 12 5.09C13.09 3.81 14.76 3 16.5 3C19.58 3 22 5.4 22 8.5C22 12.1 18.6 15.1 13.45 19.7L12 21Z" id="pi-heart-path" stroke="#4E4B3D" stroke-width="1.8" stroke-linejoin="round"/>
+              </svg>
+            </button>
+            <div class="pi-hero-badge">Let's prepare</div>
+            <h1 class="pi-hero-title" id="pi-hero-title">Nice<br>OOTD</h1>
+          </div>
+
+          <!-- Scrollable body -->
+          <div class="pi-inner">
+
+            <!-- Motivation -->
+            <div class="pi-motivation">
+              <div class="pi-motivation-icon" id="pi-motivation-icon">
+                <img src="./assets/icons/treats/ootd.svg" alt="" />
+              </div>
+              <p class="pi-motivation-text" id="pi-motivation-text">
+                Lay it out tonight, dress good tomorrow. You are indeed THE main character!
+              </p>
+            </div>
+
+            <!-- Checklist -->
+            <div class="pi-preparations">
+              <p class="pi-section-label">Tonight's preparations</p>
+              <div class="pi-checklist" id="pi-checklist" role="group" aria-label="Preparation steps"></div>
+            </div>
+
+            <!-- CTA -->
+            <div class="pi-cta-wrap">
+              <button type="button" class="pi-cta-btn" id="pi-cta-btn" disabled>
+                I'm done
+              </button>
+              <p class="pi-morning-hint" id="pi-morning-hint">
+                It's morning — time to enjoy your treat!
+              </p>
+              <button type="button" class="pi-remind-btn" id="pi-remind-btn">
+                Remind me later
+              </button>
+            </div>
+
+            <!-- Sun -->
+            <div class="sun" aria-hidden="true" style="align-self: center;">
+              <img class="sun-img" src="./assets/logo/sun.png" alt="" width="119" height="117" />
+            </div>
+
+          </div>
+        </section>
+
+        <!-- Bottom nav -->
+        <nav class="bottom-nav" aria-label="Bottom navigation">
+          <div class="bottom-nav-inner">
+            <a class="nav-btn nav-active" href="index.html" aria-label="Home">
+              <img class="nav-home nav-icon-default" src="assets/icons/nav/home.svg" alt="" />
+              <img class="nav-home nav-icon-active"  src="assets/icons/nav/home-active.png" alt="" />
+            </a>
+            <a class="nav-btn" href="add.html" aria-label="Add">
+              <img class="nav-plus nav-icon-default" src="assets/icons/nav/add.svg" alt="" />
+              <img class="nav-plus nav-icon-active"  src="assets/icons/nav/add-active.png" alt="" />
+            </a>
+            <a class="nav-btn" href="calendar.html" aria-label="Calendar">
+              <img class="nav-cal nav-icon-default" src="assets/icons/nav/calendar.svg" alt="" />
+              <img class="nav-cal nav-icon-active"  src="assets/icons/nav/calendar-active.png" alt="" />
+            </a>
+          </div>
+        </nav>
+        <div class="home-indicator" aria-hidden="true"></div>
+
+      </main>
+    </div>
+
+    <script>
+      (function () {
+
+        /* ─── Treat data ─────────────────────────────────────── */
+        var TREAT_DATA = {
+          "Nice OOTD": {
+            color: "#ffd3ea",
+            icon:  "./assets/icons/treats/ootd.svg",
+            motivation: "Lay it out tonight, dress good tomorrow. You are indeed THE main character!",
+            steps: [
+              "Grab your favourite dress, tops/bottoms and accessories",
+              "Lay/hang the outfit at a designated spot"
+            ]
+          },
+          "Enjoy a warm drink": {
+            color: "#fff5c5",
+            icon:  "./assets/icons/treats/warm-drink.svg",
+            motivation: "A warm drink makes mornings worth waking up for. Set it up now!",
+            steps: [
+              "Set out your favourite mug",
+              "Prepare your drink ingredients (tea bags, coffee, etc.)",
+              "Place everything near the kettle"
+            ]
+          },
+          "A simple breakfast": {
+            color: "#ffe2b8",
+            icon:  "./assets/icons/treats/breakfast.svg",
+            motivation: "A little evening prep makes breakfast feel like a gift to future you.",
+            steps: [
+              "Set out your bowl, plate, or utensils",
+              "Prep your ingredients and pop them in the fridge",
+              "Leave a small note of what you're making"
+            ]
+          },
+          "2-minute journaling": {
+            color: "#e5deff",
+            icon:  "./assets/icons/treats/journal.svg",
+            motivation: "Two minutes, big difference. Your thoughts deserve a home!",
+            steps: [
+              "Place your journal and pen by the bed",
+              "Write one thing you're looking forward to tomorrow"
+            ]
+          },
+          "Read a page": {
+            color: "#d0f3c1",
+            icon:  "./assets/icons/treats/book.svg",
+            motivation: "One page a morning adds up. Leave it ready so you just need to open it.",
+            steps: [
+              "Leave your book on the nightstand",
+              "Mark the page you'll start from tomorrow"
+            ]
+          }
+        };
+
+        /* ─── Resolve treat ──────────────────────────────────── */
+        var params    = new URLSearchParams(window.location.search);
+        var treatName = params.get("treat") || sessionStorage.getItem("activePrepTreat") || "Nice OOTD";
+
+        var data = TREAT_DATA[treatName];
+
+        /* ── Fallback for any future / custom treat ──────────── */
+        if (!data) {
+          /* Try to pull colour + icon from morningTreats storage */
+          var storedTreats = [];
+          try { storedTreats = JSON.parse(sessionStorage.getItem("morningTreats")) || []; } catch (e) {}
+          var storedMatch = null;
+          for (var si = 0; si < storedTreats.length; si++) {
+            if (storedTreats[si].name === treatName) { storedMatch = storedTreats[si]; break; }
+          }
+          data = {
+            color:      (storedMatch && storedMatch.color) || "#f0ede0",
+            icon:       (storedMatch && storedMatch.icon)  || "",
+            motivation: "A little prep tonight makes tomorrow morning feel like a gift to yourself.",
+            steps: [
+              "Get everything you need ready and in reach",
+              "Set it up somewhere you'll easily find in the morning"
+            ]
+          };
+        }
+
+        /* ─── Apply hero color + title ───────────────────────── */
+        var heroEl    = document.getElementById("pi-hero");
+        var titleEl   = document.getElementById("pi-hero-title");
+        var topSafe   = document.getElementById("top-safe");
+        var motIcon   = document.getElementById("pi-motivation-icon");
+        var motText   = document.getElementById("pi-motivation-text");
+
+        heroEl.style.background  = data.color;
+        motIcon.style.background = data.color;
+        motText.textContent      = data.motivation;
+        motIcon.querySelector("img").src = data.icon || "";
+        topSafe.style.background = data.color;
+
+        var words = treatName.split(" ");
+        if (words.length > 2) {
+          titleEl.innerHTML = words.slice(0, Math.ceil(words.length / 2)).join(" ") +
+            "<br>" + words.slice(Math.ceil(words.length / 2)).join(" ");
+        } else {
+          titleEl.textContent = treatName;
+        }
+
+        /* ─── Build checklist ────────────────────────────────── */
+        var ctaBtn      = document.getElementById("pi-cta-btn");
+        var remindBtn   = document.getElementById("pi-remind-btn");
+        var hintEl      = document.getElementById("pi-morning-hint");
+        var checklistEl = document.getElementById("pi-checklist");
+        var checkedSteps = [];
+
+        function uncheckedSVG() {
+          return '<circle cx="16" cy="16" r="13" stroke="#b9b6ab" stroke-width="1.5" fill="none"/>';
+        }
+        function checkedSVG() {
+          return '<circle cx="16" cy="16" r="16" fill="#4e4b3d"/>' +
+            '<path d="M10 16.5l4.5 4.5 7.5-9" stroke="#fffef7" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>';
+        }
+
+        data.steps.forEach(function (step, i) {
+          checkedSteps[i] = false;
+          var btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "pi-step";
+          btn.setAttribute("aria-pressed", "false");
+          btn.innerHTML =
+            '<p class="pi-step-text">' + step + '</p>' +
+            '<svg class="pi-step-circle" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
+              uncheckedSVG() +
+            '</svg>';
+          btn.addEventListener("click", function () {
+            checkedSteps[i] = !checkedSteps[i];
+            btn.classList.toggle("checked", checkedSteps[i]);
+            btn.setAttribute("aria-pressed", String(checkedSteps[i]));
+            btn.querySelector("svg").innerHTML = checkedSteps[i] ? checkedSVG() : uncheckedSVG();
+            updateCTA();
+          });
+          checklistEl.appendChild(btn);
+        });
+
+        /* ─── Time check: morning = 6:00–11:59 ──────────────── */
+        var isMorning = (function () {
+          var tp = params.get("time");
+          if (tp === "morning") return true;
+          if (tp === "night")   return false;
+          var h = new Date().getHours();
+          return h >= 6 && h < 12;
+        })();
+
+        if (isMorning) {
+          ctaBtn.textContent = "Let's start!";
+          ctaBtn.classList.add("morning", "active");
+          ctaBtn.disabled = false;
+          hintEl.style.display = "block";
+        }
+
+        function updateCTA() {
+          if (isMorning) return;
+          var allChecked = checkedSteps.every(function (v) { return v; });
+          ctaBtn.disabled = !allChecked;
+          ctaBtn.classList.toggle("active", allChecked);
+        }
+
+        /* ─── CTA click ──────────────────────────────────────── */
+        ctaBtn.addEventListener("click", function () {
+          if (ctaBtn.disabled) return;
+          markTreatReady(isMorning);
+          window.location.href = isMorning ? "celebrate.html" : "index.html";
+        });
+
+        function markTreatReady(completed) {
+          var list = [];
+          try { list = JSON.parse(sessionStorage.getItem("morningTreats")) || []; } catch (e) {}
+          var found = false;
+          list = list.map(function (t) {
+            if (t.name === treatName) {
+              found = true;
+              return Object.assign({}, t, { prepared: true, status: completed ? "done" : "ready" });
+            }
+            return t;
+          });
+          if (!found) {
+            list.push({
+              name: treatName, icon: data.icon, color: data.color,
+              type: "prep", status: completed ? "done" : "ready", prepared: true
+            });
+          }
+          sessionStorage.setItem("morningTreats", JSON.stringify(list));
+        }
+
+        /* ─── Remind me later ────────────────────────────────── */
+        remindBtn.addEventListener("click", function () {
+          window.location.href = "index.html";
+        });
+
+        /* ─── Heart toggle ───────────────────────────────────── */
+        var heartBtn  = document.getElementById("pi-heart-btn");
+        var heartPath = document.getElementById("pi-heart-path");
+        var liked = false;
+
+        heartBtn.addEventListener("click", function () {
+          liked = !liked;
+          heartBtn.classList.toggle("liked", liked);
+          heartBtn.setAttribute("aria-pressed", String(liked));
+          if (liked) {
+            heartPath.setAttribute("fill", "#FC6993");
+            heartPath.setAttribute("stroke", "#FC6993");
+          } else {
+            heartPath.setAttribute("fill", "none");
+            heartPath.setAttribute("stroke", "#4E4B3D");
+          }
+        });
+
+      })();
+    </script>
+  </body>
+</html>

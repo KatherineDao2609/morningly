@@ -1,0 +1,405 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Save this morning</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@100..900&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="device-shell">
+      <main class="phone">
+
+        <!-- Status bar -->
+        <div class="done-top-safe">
+          <div class="dynamic-island" aria-hidden="true"></div>
+        </div>
+
+        <!-- Back + profile pill -->
+        <div class="timer-nav-pill">
+          <svg width="10" height="18" viewBox="0 0 10 18" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M9 1L1 9L9 17" stroke="#4E4B3D" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <img src="https://www.figma.com/api/mcp/asset/894cb4cd-a535-4ec0-ae13-586498a7faec" alt="Profile" />
+        </div>
+
+        <!-- Skip -->
+        <button class="done-skip" type="button" onclick="window.location='index.html'">Skip</button>
+
+        <!-- Date label — updated by JS -->
+        <p class="done-today" id="done-date-label">today</p>
+
+        <!-- Scrollable strip — items built by JS -->
+        <div class="done-strip" id="done-strip" role="list" aria-label="Past mornings"></div>
+
+        <!-- Big photo circle -->
+        <div class="done-photo-circle" id="done-big-circle" role="button" aria-label="Add a photo" tabindex="0">
+          <div class="done-photo-placeholder" id="done-big-inner">
+            <!-- filled by JS -->
+          </div>
+        </div>
+
+        <!-- Mood + note -->
+        <div class="done-feel-section" id="done-feel-section">
+          <p class="done-feel-label">How did that feel?</p>
+          <div class="done-mood-row">
+            <button type="button" class="done-mood-pill">Peaceful</button>
+            <button type="button" class="done-mood-pill">Content</button>
+            <button type="button" class="done-mood-pill">Ordinary</button>
+          </div>
+          <div class="done-mood-row">
+            <button type="button" class="done-mood-pill">Relieved</button>
+            <button type="button" class="done-mood-pill">Productive</button>
+            <button type="button" class="done-mood-pill">Stressed</button>
+          </div>
+          <div class="done-mood-row">
+            <button type="button" class="done-mood-pill">Tiring</button>
+            <button type="button" class="done-mood-pill">Sad</button>
+            <button type="button" class="done-mood-pill">Worryful</button>
+          </div>
+          <div class="done-note-wrap">
+            <div class="done-note-cursor" id="done-note-cursor" aria-hidden="true"></div>
+            <input
+              id="done-note-input"
+              class="done-note-input"
+              type="text"
+              placeholder="One thing about this morning…"
+              aria-label="One thing about this morning"
+            />
+          </div>
+        </div>
+
+        <!-- Save button -->
+        <a class="done-save-btn" href="celebrate.html">Save this morning</a>
+
+        <div class="home-indicator" aria-hidden="true"></div>
+      </main>
+    </div>
+
+    <script>
+    (function () {
+      /* ─── Asset icon paths (Streamline Plump Remix + custom) ────────── */
+      var ICONS = {
+        book:          "./assets/icons/treats/book.svg",
+        shower:        "./assets/icons/treats/shower.svg",
+        music:         "./assets/icons/treats/music.svg",
+        "warm-drink":  "./assets/icons/treats/warm-drink.svg",
+        "water-plants":"./assets/icons/treats/water-plants.svg",
+        journal:       "./assets/icons/treats/journal.svg",
+        pet:           "./assets/icons/treats/hug-your-pet.svg",
+        ootd:          "./assets/icons/treats/ootd.svg"
+      };
+
+      // Camera icon
+      var ICON_CAMERA = '<img src="https://www.figma.com/api/mcp/asset/6ba1dad1-2573-4132-af6c-cd48167e32e9" style="width:32px;height:32px;display:block;" alt="Add photo" />';
+
+      /* ─── Treat chosen this session ────────────────────────────────── */
+      var SESSION_TREAT_ICON = sessionStorage.getItem("activeTreatIcon") || "";
+
+      /* ─── Entry data (12 entries, oldest → newest) ─────────────────── */
+      var ENTRIES = [
+        {
+          date: "Mon, Mar 9",
+          hasPhoto: false,
+          activity: "journal",
+          moods: ["Ordinary"],
+          note: "Two minutes of gratitude before getting up."
+        },
+        {
+          date: "Tue, Mar 10",
+          hasPhoto: true,
+          photo: "./assets/photos/pour-over-coffee.jpg",
+          moods: ["Peaceful", "Content"],
+          note: "Quiet morning with a pour-over coffee."
+        },
+        {
+          date: "Wed, Mar 11",
+          hasPhoto: false,
+          activity: "warm-drink",
+          moods: ["Productive"],
+          note: "Made a matcha before starting the day."
+        },
+        {
+          date: "Thu, Mar 12",
+          hasPhoto: true,
+          photo: "./assets/photos/light-through-window.jpg",
+          moods: ["Peaceful"],
+          note: "Watched the light come through the curtains."
+        },
+        {
+          date: "Fri, Mar 13",
+          hasPhoto: false,
+          activity: "shower",
+          moods: ["Relieved"],
+          note: "Long hot shower, felt completely reset."
+        },
+        {
+          date: "Sat, Mar 14",
+          hasPhoto: true,
+          photo: "./assets/photos/repot-succulent.png",
+          moods: ["Content", "Peaceful"],
+          note: "Watered my plants and repotted a succulent."
+        },
+        {
+          date: "Sun, Mar 15",
+          hasPhoto: false,
+          activity: "music",
+          moods: ["Peaceful"],
+          note: "Lay in bed listening to a whole album."
+        },
+        {
+          date: "Mon, Mar 16",
+          hasPhoto: false,
+          activity: "book",
+          moods: ["Content"],
+          note: "Read a chapter before starting the week."
+        },
+        {
+          date: "Tue, Mar 17",
+          hasPhoto: true,
+          photo: "./assets/photos/see-sakura-when-walking.jpg",
+          moods: ["Content"],
+          note: "Spotted cherry blossoms on the way to class."
+        },
+        {
+          date: "Wed, Mar 18",
+          hasPhoto: true,
+          photo: "./assets/photos/coffee-mug.jpg",
+          moods: ["Relieved"],
+          note: "Coffee and quiet — really needed this."
+        },
+        {
+          date: "Thu, Mar 19",
+          hasPhoto: false,
+          activity: "pet",
+          moods: ["Peaceful"],
+          note: "Cuddled with my dog for 10 minutes."
+        },
+        {
+          date: "today",
+          isToday: true,
+          hasPhoto: false,
+          activity: "ootd",
+          directIcon: SESSION_TREAT_ICON,
+          moods: [],
+          note: ""
+        }
+      ];
+
+      /* ─── DOM refs ──────────────────────────────────────────────────── */
+      var PHONE_CENTER = 393 / 2;
+      var strip       = document.getElementById("done-strip");
+      var label       = document.getElementById("done-date-label");
+      var bigCircle   = document.getElementById("done-big-circle");
+      var bigInner    = document.getElementById("done-big-inner");
+      var feelSection = document.getElementById("done-feel-section");
+      var noteInput   = document.getElementById("done-note-input");
+      var noteCursor  = document.getElementById("done-note-cursor");
+      var pills       = feelSection.querySelectorAll(".done-mood-pill");
+
+      var activeIdx = ENTRIES.length - 1;
+
+      /* ─── Icon helpers ──────────────────────────────────────────────── */
+      function iconImg(src, size) {
+        return '<img src="' + src + '" style="width:' + size + 'px;height:' + size + 'px;object-fit:contain;display:block;" />';
+      }
+
+      function getIconSrc(entry) {
+        return (entry.directIcon) || ICONS[entry.activity] || "";
+      }
+
+      function stripItemInner(entry) {
+        if (entry.hasPhoto) {
+          return '<div style="width:40px;height:40px;border-radius:50%;overflow:hidden;border:1px solid var(--ink);">'
+               + '<img src="' + entry.photo + '" style="width:100%;height:100%;object-fit:cover;" />'
+               + '</div>';
+        }
+        var src = getIconSrc(entry);
+        return '<div style="width:40px;height:40px;border-radius:50%;background:var(--cream);border:1px solid var(--ink);display:grid;place-items:center;">'
+             + iconImg(src, 22)
+             + '</div>';
+      }
+
+      /* ─── Build strip ───────────────────────────────────────────────── */
+      function scrollToItem(item) {
+        var target = item.offsetLeft + item.offsetWidth / 2 - PHONE_CENTER;
+        strip.scrollTo({ left: target, behavior: "smooth" });
+      }
+
+      function renderStrip() {
+        strip.innerHTML = "";
+        ENTRIES.forEach(function (entry, idx) {
+          var item = document.createElement("div");
+          item.className = "done-strip-item";
+          item.setAttribute("data-index", idx);
+          item.setAttribute("role", "button");
+          item.setAttribute("tabindex", "0");
+          item.setAttribute("aria-label", entry.date);
+          item.innerHTML = stripItemInner(entry);
+
+          item.addEventListener("click", function () { scrollToItem(item); });
+          item.addEventListener("keydown", function (e) {
+            if (e.key === "Enter" || e.key === " ") scrollToItem(item);
+          });
+
+          strip.appendChild(item);
+        });
+      }
+
+      /* ─── Update big circle ─────────────────────────────────────────── */
+      function updateBigCircle(entry) {
+        if (entry.isToday) {
+          bigInner.style.background = "var(--grey)";
+          bigInner.innerHTML = ICON_CAMERA;
+          bigCircle.style.cursor = "pointer";
+        } else if (entry.hasPhoto) {
+          bigInner.style.background = "none";
+          bigInner.innerHTML = '<img src="' + entry.photo + '" style="width:186px;height:186px;border-radius:50%;object-fit:cover;display:block;" alt="' + entry.date + '" />';
+          bigCircle.style.cursor = "default";
+        } else {
+          bigInner.style.background = "var(--grey)";
+          var src = getIconSrc(entry);
+          bigInner.innerHTML = iconImg(src, 64);
+          bigCircle.style.cursor = "default";
+        }
+      }
+
+      /* ─── Update feel section ───────────────────────────────────────── */
+      function updateFeelSection(entry) {
+        var isToday = !!entry.isToday;
+
+        pills.forEach(function (pill) {
+          var mood = pill.textContent.trim();
+          pill.classList.toggle("selected", !isToday && entry.moods.indexOf(mood) !== -1);
+          pill.disabled = !isToday;
+          pill.style.opacity = (!isToday && entry.moods.indexOf(mood) === -1) ? "0.4" : "";
+        });
+
+        noteInput.readOnly = !isToday;
+        noteInput.value = isToday ? "" : (entry.note || "");
+        noteInput.placeholder = isToday
+          ? "One thing about this morning\u2026"
+          : (entry.note ? "" : "No note written.");
+        noteCursor.style.display = isToday ? "" : "none";
+      }
+
+      /* ─── Update all panels for a given index ───────────────────────── */
+      function updateActive(idx) {
+        if (idx === activeIdx) return;
+        activeIdx = idx;
+
+        var items = strip.querySelectorAll(".done-strip-item");
+        items.forEach(function (item, i) {
+          item.classList.toggle("active", i === idx);
+        });
+
+        var entry = ENTRIES[idx];
+        label.textContent = entry.date;
+        updateBigCircle(entry);
+        updateFeelSection(entry);
+      }
+
+      /* ─── Scroll listener ───────────────────────────────────────────── */
+      strip.addEventListener("scroll", function () {
+        var sl = strip.scrollLeft;
+        var items = strip.querySelectorAll(".done-strip-item");
+        var best = 0, bestDist = Infinity;
+        items.forEach(function (item, i) {
+          var mid = item.offsetLeft + item.offsetWidth / 2 - sl;
+          var dist = Math.abs(mid - PHONE_CENTER);
+          if (dist < bestDist) { bestDist = dist; best = i; }
+        });
+        updateActive(best);
+      }, { passive: true });
+
+      /* ─── Photo upload (today only) ─────────────────────────────────── */
+      var fileInput = document.createElement("input");
+      fileInput.type = "file";
+      fileInput.accept = "image/*";
+      fileInput.style.display = "none";
+      document.body.appendChild(fileInput);
+
+      bigCircle.addEventListener("click", function () {
+        if (ENTRIES[activeIdx].isToday) fileInput.click();
+      });
+      bigCircle.addEventListener("keydown", function (e) {
+        if ((e.key === "Enter" || e.key === " ") && ENTRIES[activeIdx].isToday) fileInput.click();
+      });
+
+      fileInput.addEventListener("change", function () {
+        if (!fileInput.files || !fileInput.files[0]) return;
+        var url = URL.createObjectURL(fileInput.files[0]);
+        ENTRIES[activeIdx].photo    = url;
+        ENTRIES[activeIdx].hasPhoto = true;
+        /* Refresh strip item and big circle */
+        var items = strip.querySelectorAll(".done-strip-item");
+        items[activeIdx].innerHTML = stripItemInner(ENTRIES[activeIdx]);
+        updateBigCircle(ENTRIES[activeIdx]);
+      });
+
+      /* ─── Mood pills (today only) ───────────────────────────────────── */
+      pills.forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          if (!ENTRIES[activeIdx].isToday) return;
+          btn.classList.toggle("selected");
+        });
+      });
+
+      /* ─── Note cursor blink ─────────────────────────────────────────── */
+      noteInput.addEventListener("focus", function () { noteCursor.style.display = "none"; });
+      noteInput.addEventListener("blur",  function () {
+        if (ENTRIES[activeIdx].isToday) noteCursor.style.display = "";
+      });
+
+      /* ─── Save this morning ─────────────────────────────────────────── */
+      var saveBtn = document.querySelector(".done-save-btn");
+      if (saveBtn) {
+        saveBtn.addEventListener("click", function (e) {
+          e.preventDefault();
+          var today = ENTRIES[ENTRIES.length - 1];
+
+          /* Collect selected moods */
+          var selectedMoods = [];
+          pills.forEach(function (pill) {
+            if (pill.classList.contains("selected")) {
+              selectedMoods.push(pill.textContent.trim());
+            }
+          });
+          sessionStorage.setItem("savedMoods", JSON.stringify(selectedMoods));
+          sessionStorage.setItem("savedNote",  noteInput.value.trim());
+
+          /* Save photo or treat icon */
+          if (today.hasPhoto && today.photo) {
+            sessionStorage.setItem("savedPhoto", today.photo);
+            sessionStorage.removeItem("savedIcon");
+          } else {
+            sessionStorage.removeItem("savedPhoto");
+            sessionStorage.setItem("savedIcon", getIconSrc(today));
+          }
+
+          window.location.href = "celebrate.html";
+        });
+      }
+
+      /* ─── Init ──────────────────────────────────────────────────────── */
+      renderStrip();
+
+      // Scroll to today (last item) immediately
+      (function init() {
+        var items = strip.querySelectorAll(".done-strip-item");
+        var last = items[items.length - 1];
+        strip.scrollLeft = last.offsetLeft + last.offsetWidth / 2 - PHONE_CENTER;
+
+        // Mark today active without triggering the "same index" guard
+        activeIdx = -1;
+        updateActive(ENTRIES.length - 1);
+      })();
+
+    })();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,745 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Thesis Mobile Screen</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@100..900&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+    <style>
+      /* ── Pill variants ──────────────────────────────────── */
+      .pill-ready    { padding: 3px 15px; background: var(--ink);      color: var(--cream); border-radius: 100px; font-size: 14px; font-weight: 400; }
+      .pill-prepared { padding: 3px 15px; background: var(--card-tan); color: var(--ink);   border-radius: 100px; font-size: 14px; font-weight: 400; border: 1px solid var(--grey); }
+
+      /* ── CTA + skip group ───────────────────────────────── */
+      .treat-cta-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        width: 100%;
+      }
+
+      /* ── Skip button ────────────────────────────────────── */
+      .skip-treat-btn {
+        width: 100%;
+        padding: 0;
+        border: none;
+        background: transparent;
+        font-family: inherit;
+        font-size: 14px;
+        font-weight: 400;
+        color: var(--muted-letter);
+        cursor: pointer;
+        text-align: center;
+        line-height: 1.3;
+      }
+
+      /* ── Prepare Now button ─────────────────────────────── */
+      .prepare-now-btn {
+        width: 100%;
+        padding: 12px 24px;
+        border-radius: 100px;
+        border: 2px solid var(--ink);
+        background: transparent;
+        font-family: inherit;
+        font-size: 17px;
+        font-weight: 500;
+        color: var(--ink);
+        cursor: pointer;
+        text-align: center;
+        line-height: normal;
+      }
+
+      /* ── Dynamic treat stack ────────────────────────────── */
+      #treat-stack {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        width: 100%;
+      }
+
+      /* ── Skip notification ──────────────────────────────── */
+      .skip-notif {
+        width: 100%;
+        background: var(--card-tan);
+        border-radius: 15px;
+        padding: 16px 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+      .skip-notif p {
+        font-size: 15px;
+        font-weight: 400;
+        color: var(--ink);
+        margin: 0;
+        line-height: 1.4;
+        flex: 1;
+      }
+      .skip-notif-undo {
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--ink);
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        font-family: inherit;
+        white-space: nowrap;
+        text-decoration: underline;
+        flex-shrink: 0;
+      }
+
+      /* ── add treats link ────────────────────────────────── */
+      .add-treats-link {
+        color: var(--text-dark);
+        text-decoration: none;
+        font-size: 14px;
+      }
+
+      /* ── calendar-pill as link ──────────────────────────── */
+      a.calendar-pill { text-decoration: none; cursor: pointer; }
+
+      /* ── Remind toast ───────────────────────────────────── */
+      .remind-toast {
+        position: absolute;
+        bottom: 112px; /* sit just above the nav bar */
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 60;
+        background: var(--ink);
+        color: var(--cream);
+        font-size: 14px;
+        font-weight: 500;
+        line-height: 1.4;
+        padding: 12px 20px;
+        border-radius: 100px;
+        white-space: nowrap;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.3s;
+      }
+      .remind-toast.visible { opacity: 1; }
+
+      /* ── Sleep notification banner ──────────────────────── */
+      .sleep-notif-backdrop {
+        position: absolute;
+        top: 64px;
+        left: 0;
+        width: 393px;
+        height: calc(852px - 64px);
+        background: rgba(255, 254, 247, 0.7);
+        z-index: 50;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px 24px;
+        border-radius: 0 0 48px 48px;
+      }
+      .sleep-notif-card {
+        background: var(--cream);
+        border: 1px solid var(--grey);
+        border-radius: 20px;
+        padding: 24px 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+        width: 100%;
+        box-shadow: 0 6px 24px rgba(0,0,0,0.1);
+      }
+      .sleep-notif-msg {
+        font-size: 17px;
+        font-weight: 400;
+        line-height: 1.6;
+        color: var(--ink);
+        margin: 0;
+        text-align: center;
+      }
+      .sleep-notif-dismiss {
+        padding: 10px 28px;
+        border-radius: 100px;
+        background: var(--ink);
+        color: var(--cream);
+        border: none;
+        font-family: inherit;
+        font-size: 15px;
+        font-weight: 500;
+        cursor: pointer;
+      }
+
+      /* ── Love letter overlay ────────────────────────────── */
+      .love-overlay-backdrop {
+        position: absolute;
+        inset: 0;
+        background: rgba(78, 75, 61, 0.45);
+        z-index: 200;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 48px;
+      }
+      .love-letter-card {
+        background: #fff5c5;
+        border: 2px solid #000;
+        border-radius: 20px;
+        width: 320px;
+        padding: 21px 28px;
+        display: flex;
+        flex-direction: column;
+        gap: 32px;
+      }
+      .love-letter-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+      }
+      .love-letter-meta p {
+        font-size: 17px;
+        color: #333;
+        margin: 0;
+        line-height: 1.5;
+      }
+      .love-letter-meta strong { font-weight: 700; }
+      .love-letter-env {
+        width: 32px;
+        height: 32px;
+        display: block;
+        flex-shrink: 0;
+        object-fit: contain;
+      }
+      .love-letter-quote {
+        font-size: 22px;
+        font-weight: 400;
+        line-height: 1.4;
+        color: #333;
+        margin: 0;
+      }
+      .love-letter-author {
+        font-size: 17px;
+        font-weight: 700;
+        color: #333;
+        margin: 8px 0 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="device-shell">
+      <main class="phone">
+        <div class="top-safe">
+          <div class="dynamic-island" aria-hidden="true"></div>
+        </div>
+
+        <!-- Remind-me toast -->
+        <div class="remind-toast" id="remind-toast" role="status" aria-live="polite">We'll remind you tonight ✨</div>
+
+        <!-- Sleep response notification -->
+        <div class="sleep-notif-backdrop" id="sleep-notif-backdrop" style="display:none;" role="alert" aria-live="assertive">
+          <div class="sleep-notif-card">
+            <p class="sleep-notif-msg" id="sleep-notif-msg"></p>
+            <button type="button" class="sleep-notif-dismiss" id="sleep-notif-dismiss">I got it</button>
+          </div>
+        </div>
+
+        <!-- Love letter overlay -->
+        <div class="love-overlay-backdrop" id="love-overlay" style="display:none;" role="dialog" aria-modal="true">
+          <div class="love-letter-card" id="love-letter-card">
+            <div class="love-letter-header">
+              <div class="love-letter-meta">
+                <p>Date: <strong>thur, mar 19</strong></p>
+                <p>From: <strong>morningly</strong></p>
+                <p>To: <strong>katie</strong></p>
+              </div>
+              <img
+                class="love-letter-env"
+                src="https://www.figma.com/api/mcp/asset/c9aab0a0-4346-48ae-bb8e-eb5ab6fe53b4"
+                alt=""
+              />
+            </div>
+            <div>
+              <p class="love-letter-quote">"You can't go back and change the beginning, but you can start where you are and change the ending."</p>
+              <p class="love-letter-author">C.S Lewis</p>
+            </div>
+          </div>
+        </div>
+
+        <section class="scroll-area">
+          <div class="stack">
+            <div class="header-row">
+              <div class="left-profile">
+                <img
+                  class="icon-24"
+                  src="https://www.figma.com/api/mcp/asset/39bdec9c-7255-4ee7-96e5-f96b71a47ecd"
+                  alt=""
+                />
+                <span class="username">katherine</span>
+              </div>
+              <div class="right-icons">
+                <button
+                  type="button"
+                  class="love-letter"
+                  aria-label="Open love letter"
+                  id="love-letter-btn"
+                >
+                  <img
+                    class="love-letter-icon"
+                    id="love-letter-icon-img"
+                    src="./assets/icons/ui/chevron-close.png"
+                    alt=""
+                    width="24"
+                    height="24"
+                  />
+                </button>
+                <div class="streak">
+                  <img
+                    class="icon-24 streak-flame"
+                    src="https://www.figma.com/api/mcp/asset/0dea888e-9969-467c-8e0b-cb0e15cc0f95"
+                    alt=""
+                  />
+                  <span class="streak-count">3</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="greeting-block">
+              <div class="greeting-copy">
+                <p class="date">Thursday, Mar 19</p>
+                <h1 class="greeting" id="home-greeting">
+                  <span>Good morning,</span>
+                  <span id="home-greeting-sub">how was your sleep?</span>
+                </h1>
+              </div>
+              <div class="sleep-pills" id="home-sleep-pills" role="group" aria-label="How was your sleep?">
+                <button type="button" class="sleep-pill" data-sleep="great">Great</button>
+                <button type="button" class="sleep-pill" data-sleep="alright">Alright</button>
+                <button type="button" class="sleep-pill sleep-pill-wide" data-sleep="need-more">I need more sleep</button>
+              </div>
+            </div>
+
+            <article class="card card-progress">
+              <h2 class="card-title">Awesome progress</h2>
+              <p class="card-body">3 morning treats in a row!</p>
+              <div class="days">
+                <span class="day day-done">S</span>
+                <span class="day day-done">M</span>
+                <span class="day day-todo">T</span>
+                <span class="day day-done">W</span>
+                <span class="day-ring-wrap">
+                  <img
+                    class="day-ring"
+                    src="https://www.figma.com/api/mcp/asset/4d43c973-3393-4810-9a96-d80fdd195509"
+                    alt=""
+                  />
+                  <span class="day day-done day-today">T</span>
+                </span>
+                <span class="day day-todo">F</span>
+                <span class="day day-todo">S</span>
+                <a class="calendar-pill" href="calendar.html">My Calendar</a>
+              </div>
+            </article>
+
+            <div class="treat-section">
+              <h2 class="section-title">My treat</h2>
+
+              <!-- Default card — shown when nothing is queued -->
+              <article class="feature-card" id="default-treat-card">
+                <div class="feature-top">
+                  <span class="pill pill-dark">Ready now</span>
+                  <span class="mins">5 min</span>
+                </div>
+                <div class="feature-body">
+                  <img
+                    class="feature-icon"
+                    src="https://www.figma.com/api/mcp/asset/8c5b9427-0eed-4dfd-a47a-74a2402f31df"
+                    alt=""
+                  />
+                  <div class="feature-copy">
+                    <h3>A nice OOTD</h3>
+                    <p>Walking out that door and looking your best, you are the main character!</p>
+                  </div>
+                </div>
+                <div class="treat-cta-group">
+                  <a class="cta-start" id="home-cta" href="timer.html">Let's start</a>
+                  <button type="button" class="skip-treat-btn" id="default-skip-btn">Skip for now</button>
+                </div>
+              </article>
+
+              <!-- Dynamic treat stack -->
+              <div id="treat-stack"></div>
+
+              <!-- Empty-treats nudge (shown when no treats are lined up) -->
+              <p id="empty-treats-msg" style="display:none; margin:0; font-size:15px; font-weight:400; color:var(--muted-letter); line-height:1.5; text-align:center; padding:4px 0;">
+                No treat lined up for tomorrow yet —<br>feel free to gift yourself something little ✨
+              </p>
+
+              <!-- Skip notification with undo -->
+              <div class="skip-notif" id="skip-notif" style="display:none;" role="status">
+                <p>No worries — your morning is still yours. ☀️</p>
+                <button type="button" class="skip-notif-undo" id="skip-undo-btn">Undo</button>
+              </div>
+
+              <div class="add-treats">
+                <img
+                  src="https://www.figma.com/api/mcp/asset/0e3f2057-dd29-42d2-9e3a-d84887ce2b2a"
+                  alt=""
+                  width="16"
+                  height="16"
+                />
+                <a href="add.html" class="add-treats-link">add treats</a>
+              </div>
+            </div>
+
+            <div class="tonight-section">
+              <h2 class="section-title">For tonight</h2>
+              <a href="prepare.html" class="tonight tonight-link" id="tonight-generic" aria-label="Pick your morning treat">
+                <div class="tonight-top">
+                  <img
+                    class="moon"
+                    src="https://www.figma.com/api/mcp/asset/74c9842e-94e7-4d36-bec1-8d2088fb207b"
+                    alt=""
+                  />
+                  <img
+                    class="tonight-chevron"
+                    src="https://www.figma.com/api/mcp/asset/72e05e16-917a-4863-bdf4-b3c88f8fabbe"
+                    alt=""
+                  />
+                </div>
+                <div class="tonight-copy">
+                  <h3>What would feel nice tomorrow morning?</h3>
+                  <p>Pick something you'd enjoy and you can set it up tonight if you like</p>
+                </div>
+              </a>
+              <div id="tonight-prep-wrap" style="display:none; flex-direction:column; gap:12px;"></div>
+            </div>
+
+            <div class="sun" aria-hidden="true">
+              <img class="sun-img" src="./assets/logo/sun.png" alt="" width="119" height="117" />
+            </div>
+          </div>
+        </section>
+
+                                        <nav class="bottom-nav" aria-label="Bottom navigation">
+          <div class="bottom-nav-inner">
+            <a class="nav-btn nav-active" href="#" aria-label="Home">
+              <img class="nav-home nav-icon-default" src="assets/icons/nav/home.svg" alt="" />
+              <img class="nav-home nav-icon-active"  src="assets/icons/nav/home-active.png" alt="" />
+            </a>
+            <a class="nav-btn" href="add.html" aria-label="Add">
+              <img class="nav-plus nav-icon-default" src="assets/icons/nav/add.svg" alt="" />
+              <img class="nav-plus nav-icon-active"  src="assets/icons/nav/add-active.png" alt="" />
+            </a>
+            <a class="nav-btn" href="calendar.html" aria-label="Calendar">
+              <img class="nav-cal nav-icon-default" src="assets/icons/nav/calendar.svg" alt="" />
+              <img class="nav-cal nav-icon-active"  src="assets/icons/nav/calendar-active.png" alt="" />
+            </a>
+          </div>
+        </nav>
+        <div class="home-indicator" aria-hidden="true"></div>
+      </main>
+    </div>
+
+    <script>
+      (function () {
+
+        /* ── Treat metadata ──────────────────────────────────── */
+        var TREAT_INFO = {
+          "A nice OOTD":         { desc: "Walking out that door and looking your best, you are the main character!", mins: 5 },
+          "Nice OOTD":           { desc: "Walking out that door and looking your best, you are the main character!", mins: 5 },
+          "A simple breakfast":  { desc: "Fuel your morning with something warm and nourishing.", mins: 15 },
+          "Refreshing shower":   { desc: "Start fresh — a good shower sets the tone for the whole day.", mins: 10 },
+          "Nice shower":         { desc: "Start fresh — a good shower sets the tone for the whole day.", mins: 10 },
+          "Read a page":         { desc: "Just one page. That\u2019s all it takes to make reading a habit.", mins: 5 },
+          "2-minute journaling": { desc: "Two minutes of gratitude before you start your day.", mins: 2 },
+          "Morning walk":        { desc: "Step outside and let the morning air wake you up naturally.", mins: 10 },
+          "Listen to music":     { desc: "Put on your favourite song and let it carry you into the day.", mins: 3 },
+          "Water your plants":   { desc: "A moment of quiet care — for them and for you.", mins: 5 },
+          "Hug your pet":        { desc: "Start the day with unconditional love.", mins: 2 },
+          "Enjoy a warm drink":  { desc: "Wrap your hands around a warm cup and breathe.", mins: 5 }
+        };
+
+        /* ── Sleep response messages ─────────────────────────── */
+        var SLEEP_MSGS = {
+          "great":    "Love that! A good rest sets you up beautifully \u2014 enjoy every bit of your morning.",
+          "alright":  "That\u2019s okay. Give yourself some grace today. You\u2019re doing just fine.",
+          "need-more":"Hear you. Let\u2019s keep this morning soft and easy \u2014 you\u2019ve got this."
+        };
+
+        /* ── sessionStorage helpers ─────────────────────────── */
+        function getMorningTreats() {
+          try { return JSON.parse(sessionStorage.getItem("morningTreats")) || []; }
+          catch (e) { return []; }
+        }
+        function saveMorningTreats(arr) {
+          sessionStorage.setItem("morningTreats", JSON.stringify(arr));
+        }
+        function setActiveTreat(idx, name, icon) {
+          var info = TREAT_INFO[name] || { mins: 5 };
+          sessionStorage.setItem("activeTreatIdx",  String(idx));
+          sessionStorage.setItem("activeTreatSecs", String(info.mins * 60));
+          sessionStorage.setItem("activeTreatName", name || "");
+          sessionStorage.setItem("activeTreatIcon", icon || "");
+        }
+
+        /* ── Love letter ─────────────────────────────────────── */
+        var loveBtn      = document.getElementById("love-letter-btn");
+        var loveIconImg  = document.getElementById("love-letter-icon-img");
+        var loveOverlay  = document.getElementById("love-overlay");
+        var loveCard     = document.getElementById("love-letter-card");
+        var OPEN_SRC     = "./assets/icons/ui/chevron-open.png";
+        var CLOSE_SRC    = "./assets/icons/ui/chevron-close.png";
+
+        /* Persist open state for the session */
+        if (sessionStorage.getItem("letterOpened") === "1") {
+          loveIconImg.src = OPEN_SRC;
+        }
+
+        loveBtn.addEventListener("click", function () {
+          sessionStorage.setItem("letterOpened", "1");
+          loveIconImg.src = OPEN_SRC;
+          loveOverlay.style.display = "flex";
+        });
+
+        /* Close on backdrop click (not card click) */
+        loveOverlay.addEventListener("click", function (e) {
+          if (!loveCard.contains(e.target)) {
+            loveOverlay.style.display = "none";
+          }
+        });
+
+        /* ── Sleep pill notification ─────────────────────────── */
+        var sleepBackdrop  = document.getElementById("sleep-notif-backdrop");
+        var sleepMsgEl     = document.getElementById("sleep-notif-msg");
+        var sleepDismiss   = document.getElementById("sleep-notif-dismiss");
+        var greetingSub    = document.getElementById("home-greeting-sub");
+        var sleepPillsWrap = document.getElementById("home-sleep-pills");
+
+        document.querySelectorAll(".sleep-pill").forEach(function (btn) {
+          btn.addEventListener("click", function () {
+            sleepMsgEl.textContent = SLEEP_MSGS[btn.dataset.sleep] || "";
+            sleepBackdrop.style.display = "flex";
+          });
+        });
+
+        sleepDismiss.addEventListener("click", function () {
+          sleepBackdrop.style.display = "none";
+          if (greetingSub)    greetingSub.style.display    = "none";
+          if (sleepPillsWrap) sleepPillsWrap.style.display = "none";
+        });
+
+        /* ── Morning vs night (before noon = morning) ────────── */
+        function isMorning() { return new Date().getHours() < 12; }
+
+        /* ── Skip notification + undo ────────────────────────── */
+        var skipNotif     = document.getElementById("skip-notif");
+        var skipUndoBtn   = document.getElementById("skip-undo-btn");
+        var lastSkipIdx   = null;
+        var lastSkipDefault = false;
+        var undoTimer     = null;
+
+        function showSkipNotif(treatIdx, isDefault) {
+          lastSkipIdx     = treatIdx;
+          lastSkipDefault = isDefault || false;
+          skipNotif.style.display = "flex";
+          if (undoTimer) clearTimeout(undoTimer);
+          undoTimer = setTimeout(function () {
+            skipNotif.style.display = "none";
+            lastSkipIdx = null;
+          }, 5000);
+        }
+
+        skipUndoBtn.addEventListener("click", function () {
+          clearTimeout(undoTimer);
+          skipNotif.style.display = "none";
+          if (lastSkipDefault) {
+            var dc = document.getElementById("default-treat-card");
+            if (dc) dc.style.display = "";
+          } else if (lastSkipIdx !== null) {
+            var treats = getMorningTreats();
+            if (treats[lastSkipIdx]) {
+              treats[lastSkipIdx].status = "pending";
+              saveMorningTreats(treats);
+            }
+          }
+          lastSkipIdx = null;
+          renderAll();
+        });
+
+        /* Default card skip */
+        var defaultSkipBtn = document.getElementById("default-skip-btn");
+        if (defaultSkipBtn) {
+          defaultSkipBtn.addEventListener("click", function () {
+            var dc = document.getElementById("default-treat-card");
+            if (dc) dc.style.display = "none";
+            showSkipNotif(null, true);
+          });
+        }
+
+        /* Default card Let's start → store treat secs, name, icon */
+        var homeCta = document.getElementById("home-cta");
+        if (homeCta) {
+          homeCta.addEventListener("click", function (e) {
+            e.preventDefault();
+            sessionStorage.setItem("activeTreatSecs", "300"); /* 5 min */
+            sessionStorage.setItem("activeTreatName", "A nice OOTD");
+            sessionStorage.setItem("activeTreatIcon", "https://www.figma.com/api/mcp/asset/8c5b9427-0eed-4dfd-a47a-74a2402f31df");
+            sessionStorage.removeItem("activeTreatIdx");
+            window.location.href = "timer.html";
+          });
+        }
+
+        /* ── Build a dynamic treat card ──────────────────────── */
+        function makeTreatCard(treat, idx) {
+          var info = TREAT_INFO[treat.name] || { desc: "", mins: 5 };
+          var badgeClass = treat.type === "noprep" ? "pill-ready" : "pill-prepared";
+          var badgeText  = treat.type === "noprep" ? "Ready" : "Prepared";
+
+          var card = document.createElement("article");
+          card.className = "feature-card";
+          card.style.background = treat.color;
+
+          card.innerHTML =
+            '<div class="feature-top">' +
+              '<span class="pill ' + badgeClass + '">' + badgeText + '</span>' +
+              '<span class="mins">' + info.mins + ' min</span>' +
+            '</div>' +
+            '<div class="feature-body">' +
+              '<img class="feature-icon" src="' + treat.icon + '" width="32" height="32" alt="" />' +
+              '<div class="feature-copy">' +
+                '<h3>' + treat.name + '</h3>' +
+                '<p>' + info.desc + '</p>' +
+              '</div>' +
+            '</div>' +
+            '<div class="treat-cta-group">' +
+              '<a class="cta-start dyn-start" href="timer.html">Let\u2019s start</a>' +
+              '<button type="button" class="skip-treat-btn dyn-skip">Skip for now</button>' +
+            '</div>';
+
+          card.querySelector(".dyn-start").addEventListener("click", function (e) {
+            e.preventDefault();
+            setActiveTreat(idx, treat.name, treat.icon);
+            window.location.href = "timer.html";
+          });
+
+          card.querySelector(".dyn-skip").addEventListener("click", function () {
+            var treats = getMorningTreats();
+            if (treats[idx]) { treats[idx].status = "skipped"; saveMorningTreats(treats); }
+            showSkipNotif(idx, false);
+            renderAll();
+          });
+
+          return card;
+        }
+
+        /* ── Build the For Tonight prep card ─────────────────── */
+        function makeTonightCard(treat, idx) {
+          var card = document.createElement("article");
+          card.className = "tonight";
+          card.style.background = treat.color;
+
+          var copy = isMorning()
+            ? "Set this up tonight and tomorrow morning will be a breeze!"
+            : "You\u2019ve planned something lovely \u2014 get it ready now before bed.";
+
+          card.innerHTML =
+            '<div class="tonight-top">' +
+              '<img style="width:32px;height:32px;display:block;object-fit:contain;" src="' + treat.icon + '" alt="" />' +
+            '</div>' +
+            '<div class="tonight-copy">' +
+              '<h3>' + treat.name + '</h3>' +
+              '<p>' + copy + '</p>' +
+            '</div>' +
+            '<button type="button" class="cta-start tonight-prep-btn">Let\'s prepare</button>';
+
+          card.querySelector(".tonight-prep-btn").addEventListener("click", function () {
+            sessionStorage.setItem("activePrepTreat", treat.name);
+            window.location.href = "prep-instructions.html";
+          });
+
+          return card;
+        }
+
+        /* ── Render treat stack + tonight section ────────────── */
+        function renderAll() {
+          var treats      = getMorningTreats();
+          var readyTreats = [];
+          var prepNeeded  = [];
+
+          treats.forEach(function (t, i) {
+            if (t.status !== "pending") return;
+            if (t.type === "noprep" || t.prepared) readyTreats.push({ treat: t, idx: i });
+            else                                    prepNeeded.push({ treat: t, idx: i });
+          });
+
+          /* Treat stack */
+          var stack        = document.getElementById("treat-stack");
+          var defaultCard  = document.getElementById("default-treat-card");
+          var emptyMsg     = document.getElementById("empty-treats-msg");
+          stack.innerHTML  = "";
+          if (readyTreats.length > 0) {
+            if (defaultCard) defaultCard.style.display = "none";
+            if (emptyMsg)    emptyMsg.style.display    = "none";
+            readyTreats.forEach(function (e) { stack.appendChild(makeTreatCard(e.treat, e.idx)); });
+          } else {
+            /* Show nudge when default card is gone and nothing else is showing */
+            var defaultHidden = !defaultCard || defaultCard.style.display === "none";
+            if (emptyMsg) emptyMsg.style.display = defaultHidden ? "block" : "none";
+          }
+
+          /* Tonight section */
+          var tonightGeneric  = document.getElementById("tonight-generic");
+          var tonightPrepWrap = document.getElementById("tonight-prep-wrap");
+          tonightPrepWrap.innerHTML = "";
+          if (prepNeeded.length > 0) {
+            tonightGeneric.style.display  = "none";
+            tonightPrepWrap.style.display = "flex";
+            prepNeeded.forEach(function (e) { tonightPrepWrap.appendChild(makeTonightCard(e.treat, e.idx)); });
+          } else {
+            tonightGeneric.style.display  = "";
+            tonightPrepWrap.style.display = "none";
+          }
+        }
+
+        /* ── Treat done (returning from celebrate) ───────────── */
+        if (sessionStorage.getItem("treatDone") === "1") {
+          sessionStorage.removeItem("treatDone");
+          var activeIdx = parseInt(sessionStorage.getItem("activeTreatIdx"), 10);
+          sessionStorage.removeItem("activeTreatIdx");
+          sessionStorage.removeItem("activeTreatSecs");
+          var treats = getMorningTreats();
+          if (!isNaN(activeIdx) && treats[activeIdx]) {
+            treats[activeIdx].status = "done";
+          } else {
+            for (var i = 0; i < treats.length; i++) {
+              if (treats[i].status === "pending") { treats[i].status = "done"; break; }
+            }
+          }
+          saveMorningTreats(treats);
+          if (greetingSub)    greetingSub.style.display    = "none";
+          if (sleepPillsWrap) sleepPillsWrap.style.display = "none";
+        }
+
+        /* ── Init ───────────────────────────────────────────── */
+        renderAll();
+
+        /* ── "Remind me later" toast (from prep-setup) ──────── */
+        if (sessionStorage.getItem("showRemindToast") === "1") {
+          sessionStorage.removeItem("showRemindToast");
+          var remindToast = document.getElementById("remind-toast");
+          if (remindToast) {
+            remindToast.classList.add("visible");
+            setTimeout(function () {
+              remindToast.classList.remove("visible");
+            }, 3000);
+          }
+        }
+
+      })();
+    </script>
+  </body>
+</html>

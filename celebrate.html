@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>You've started your day!</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@100..900&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+    <style>
+      /* Confetti particle */
+      @keyframes cel-confetti-fly {
+        0% {
+          transform: translate(0, 0) rotate(0deg) scale(1);
+          opacity: 1;
+        }
+        80% {
+          opacity: 1;
+        }
+        100% {
+          transform: translate(var(--tx), var(--ty)) rotate(var(--rot)) scale(0.6);
+          opacity: 0;
+        }
+      }
+
+      .cel-confetti-piece {
+        position: absolute;
+        width: var(--w, 8px);
+        height: var(--h, 5px);
+        background: var(--color);
+        border-radius: var(--br, 2px);
+        top: 50%;
+        left: 50%;
+        margin-top: calc(var(--h, 5px) / -2);
+        margin-left: calc(var(--w, 8px) / -2);
+        animation: cel-confetti-fly var(--dur, 0.9s) var(--delay, 0s) cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+        pointer-events: none;
+      }
+
+      /* Camera hint on hover */
+      .cel-photo-circle:hover .cel-photo-hint {
+        opacity: 1;
+      }
+
+      .cel-photo-hint {
+        position: absolute;
+        inset: 0;
+        border-radius: 50%;
+        background: rgba(78, 75, 61, 0.35);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.2s;
+        pointer-events: none;
+        z-index: 2;
+      }
+
+      .cel-photo-hint svg {
+        width: 32px;
+        height: 32px;
+        fill: #fffef7;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="device-shell">
+      <main class="phone">
+
+        <!-- Status bar -->
+        <div class="cel-top-safe">
+          <div class="dynamic-island" aria-hidden="true"></div>
+        </div>
+
+        <!-- Heading + confetti container -->
+        <div class="cel-heading" id="cel-heading">
+          <h1 class="cel-title">You've started your day!</h1>
+          <div class="cel-subtitle">
+            <p>Thank you for gifting yourself.</p>
+            <p>It's a great start</p>
+          </div>
+        </div>
+
+        <!-- Photo circle (tap to upload) -->
+        <div class="cel-photo-circle" id="cel-photo-circle" role="button" tabindex="0" aria-label="Tap to add a photo">
+          <div class="cel-photo-inner">
+            <img
+              id="cel-photo-img"
+              src="https://www.figma.com/api/mcp/asset/e9f83640-d2c7-4c4e-9708-39969e53a74d"
+              alt="Your morning moment"
+              class="cel-photo-img"
+            />
+          </div>
+          <!-- Camera overlay hint -->
+          <div class="cel-photo-hint" aria-hidden="true">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"/>
+              <path d="M20 5h-3.17l-1.24-1.35A2 2 0 0 0 14.12 3H9.88a2 2 0 0 0-1.47.65L7.17 5H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2Zm-8 12a5 5 0 1 1 0-10 5 5 0 0 1 0 10Z"/>
+            </svg>
+          </div>
+        </div>
+
+        <!-- Hidden file input -->
+        <input id="cel-file-input" type="file" accept="image/*" style="display:none;" aria-hidden="true" />
+
+        <!-- Action buttons -->
+        <div class="cel-actions">
+          <button class="cel-btn-done" id="cel-done-btn" type="button">Done</button>
+          <a class="cel-btn-moments" href="calendar.html">See my moments</a>
+        </div>
+
+        <div class="home-indicator" aria-hidden="true"></div>
+      </main>
+    </div>
+
+    <script>
+    (function () {
+      /* ── Photo upload ─────────────────────────────────────── */
+      var circle    = document.getElementById("cel-photo-circle");
+      var fileInput = document.getElementById("cel-file-input");
+      var photo     = document.getElementById("cel-photo-img");
+
+      function showPhoto(url) {
+        photo.src = url;
+        photo.alt = "Your morning photo";
+        photo.style.width  = "100%";
+        photo.style.height = "100%";
+        photo.style.objectFit = "cover";
+      }
+
+      function showIcon(url) {
+        photo.src = url;
+        photo.alt = "";
+        photo.style.width  = "72px";
+        photo.style.height = "72px";
+        photo.style.objectFit = "contain";
+        /* Centre the icon in the circle without overflow-clipping it */
+        var inner = document.querySelector(".cel-photo-inner");
+        if (inner) {
+          inner.style.overflow   = "visible";
+          inner.style.display    = "flex";
+          inner.style.alignItems = "center";
+          inner.style.justifyContent = "center";
+        }
+      }
+
+      /* ── Restore from done.html ─────────────────────────── */
+      var savedPhoto = sessionStorage.getItem("savedPhoto") || "";
+      var savedIcon  = sessionStorage.getItem("savedIcon")  || "";
+      if (savedPhoto) {
+        showPhoto(savedPhoto);
+      } else if (savedIcon) {
+        showIcon(savedIcon);
+      }
+
+      function openPicker() { fileInput.click(); }
+
+      circle.addEventListener("click", openPicker);
+      circle.addEventListener("keydown", function (e) {
+        if (e.key === "Enter" || e.key === " ") openPicker();
+      });
+
+      fileInput.addEventListener("change", function () {
+        if (!fileInput.files || !fileInput.files[0]) return;
+        var url = URL.createObjectURL(fileInput.files[0]);
+        showPhoto(url);
+        /* Keep sessionStorage in sync so calendar can use it */
+        sessionStorage.setItem("savedPhoto", url);
+        sessionStorage.removeItem("savedIcon");
+      });
+
+      /* ── Confetti burst ───────────────────────────────────── */
+      var COLORS = ["#ffe04d", "#ffd3ea", "#e5deff", "#b9f2b9", "#ffc87a", "#a8d8ff", "#ff9eb5"];
+
+      function rand(min, max) { return Math.random() * (max - min) + min; }
+
+      function launchConfetti() {
+        var container = document.getElementById("cel-heading");
+        var count = 38;
+
+        for (var i = 0; i < count; i++) {
+          var el = document.createElement("div");
+          el.className = "cel-confetti-piece";
+
+          var angle   = rand(0, Math.PI * 2);
+          var dist    = rand(80, 200);
+          var tx      = Math.cos(angle) * dist;
+          var ty      = Math.sin(angle) * dist - rand(20, 60); // bias upward
+          var rot     = rand(-360, 360);
+          var dur     = rand(0.7, 1.1);
+          var delay   = rand(0, 0.18);
+          var w       = rand(5, 11);
+          var h       = rand(4, 7);
+          var isCircle = Math.random() > 0.7;
+
+          el.style.setProperty("--tx",    tx + "px");
+          el.style.setProperty("--ty",    ty + "px");
+          el.style.setProperty("--rot",   rot + "deg");
+          el.style.setProperty("--dur",   dur + "s");
+          el.style.setProperty("--delay", delay + "s");
+          el.style.setProperty("--color", COLORS[Math.floor(Math.random() * COLORS.length)]);
+          el.style.setProperty("--w",     w + "px");
+          el.style.setProperty("--h",     h + "px");
+          el.style.setProperty("--br",    isCircle ? "50%" : "2px");
+
+          container.appendChild(el);
+        }
+
+        // Clean up after animation finishes
+        setTimeout(function () {
+          var pieces = container.querySelectorAll(".cel-confetti-piece");
+          pieces.forEach(function (p) { p.remove(); });
+        }, 1500);
+      }
+
+      // Fire on load
+      launchConfetti();
+
+      /* ── Done button — flag home screen then navigate ─── */
+      document.getElementById("cel-done-btn").addEventListener("click", function () {
+        sessionStorage.setItem("treatDone", "1");
+        window.location.href = "index.html";
+      });
+    })();
+    </script>
+  </body>
+</html>

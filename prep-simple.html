@@ -1,0 +1,458 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Keep It Simple</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@100..900&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+    <style>
+      /* ── Scroll area ─────────────────────────────────────── */
+      .pick-scroll {
+        position: absolute;
+        top: 64px;
+        left: 0;
+        width: 393px;
+        height: 692px;
+        overflow-y: auto;
+        overflow-x: hidden;
+        background: var(--cream);
+        scrollbar-width: none;
+      }
+      .pick-scroll::-webkit-scrollbar { display: none; }
+
+      .pick-inner {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 64px;
+        padding: 94px 24px 40px;
+        width: 100%;
+      }
+
+      /* ── Back button ─────────────────────────────────────── */
+      .pick-back {
+        position: absolute;
+        top: 72px;
+        left: 24px;
+        z-index: 3;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        background: none;
+        border: none;
+        padding: 0;
+        cursor: pointer;
+        font-family: inherit;
+        font-size: 15px;
+        font-weight: 500;
+        color: var(--muted-letter);
+      }
+      .pick-back svg {
+        width: 10px;
+        height: 18px;
+        display: block;
+      }
+
+      /* ── Heading ─────────────────────────────────────────── */
+      .pick-heading {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        align-items: center;
+        text-align: center;
+        color: var(--ink);
+        width: 100%;
+      }
+      .pick-title {
+        margin: 0;
+        font-size: 24px;
+        font-weight: 700;
+        line-height: 1.3;
+      }
+      .pick-subtitle {
+        margin: 0;
+        font-size: 17px;
+        font-weight: 400;
+        line-height: 1.3;
+        color: var(--ink);
+      }
+
+      /* ── Treat list ──────────────────────────────────────── */
+      .pick-list-wrap {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 8px;
+        width: 100%;
+      }
+
+      .pick-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        width: 100%;
+      }
+
+      /* ── Single treat card ───────────────────────────────── */
+      .pick-card {
+        width: 100%;
+        background: var(--card-tan);
+        border-radius: 15px;
+        padding: 15px 20px;
+        display: flex;
+        flex-direction: column;
+        cursor: pointer;
+        border: 2px solid transparent;
+        transition: background 0.2s, border-color 0.2s;
+        text-align: left;
+        font-family: inherit;
+      }
+      .pick-card.selected {
+        border-color: var(--ink);
+      }
+
+      .pick-card-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+      }
+
+      .pick-card-left {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        align-items: flex-start;
+        flex: 1;
+        min-width: 0;
+      }
+
+      .pick-card-icon {
+        width: 32px;
+        height: 32px;
+        display: block;
+        object-fit: contain;
+        flex-shrink: 0;
+      }
+
+      .pick-card-title {
+        margin: 0;
+        font-size: 17px;
+        font-weight: 700;
+        line-height: 1.3;
+        color: var(--text-dark);
+      }
+
+      /* Short subtitle (hidden by default) */
+      .pick-card-desc {
+        margin: 6px 0 0;
+        font-size: 14px;
+        font-weight: 400;
+        line-height: 1.4;
+        color: var(--muted-letter);
+        display: none;
+      }
+      .pick-card-desc.visible {
+        display: block;
+      }
+
+      /* Chevron button */
+      .pick-chevron {
+        flex-shrink: 0;
+        width: 24px;
+        height: 24px;
+        background: none;
+        border: none;
+        padding: 0;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.2s;
+        color: var(--muted-letter);
+      }
+      .pick-chevron.open {
+        transform: rotate(180deg);
+      }
+      .pick-chevron svg {
+        width: 16px;
+        height: 16px;
+        display: block;
+      }
+
+      /* ── Shuffle icon ────────────────────────────────────── */
+      .pick-shuffle {
+        width: 24px;
+        height: 24px;
+        background: none;
+        border: none;
+        padding: 0;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--muted-letter);
+        flex-shrink: 0;
+        transition: transform 0.3s;
+      }
+      .pick-shuffle:active { transform: rotate(180deg); }
+      .pick-shuffle svg { width: 20px; height: 20px; display: block; }
+
+      /* ── CTA group ───────────────────────────────────────── */
+      .pick-cta-group {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        width: 224px;
+      }
+
+      .pick-cta-btn {
+        width: 100%;
+        padding: 16px;
+        border-radius: 100px;
+        background: var(--card-tan);
+        color: var(--text-dark);
+        border: 1px solid var(--grey);
+        font-family: inherit;
+        font-size: 17px;
+        font-weight: 500;
+        line-height: normal;
+        cursor: pointer;
+        text-align: center;
+        transition: background 0.2s, color 0.2s, border-color 0.2s;
+      }
+      .pick-cta-btn.active {
+        background: var(--ink);
+        color: var(--cream);
+        border-color: var(--ink);
+      }
+
+      .pick-footer-note {
+        font-size: 17px;
+        font-weight: 400;
+        color: var(--ink);
+        text-align: center;
+        line-height: 1.3;
+        margin: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="device-shell">
+      <main class="phone">
+
+        <div class="top-safe">
+          <div class="dynamic-island" aria-hidden="true"></div>
+        </div>
+
+        <button type="button" class="pick-back" onclick="history.back()" aria-label="Go back">
+          <svg width="10" height="18" viewBox="0 0 10 18" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M9 1L1 9L9 17" stroke="#4E4B3D" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+
+        <section class="pick-scroll">
+          <div class="pick-inner">
+
+            <!-- Heading -->
+            <div class="pick-heading">
+              <h1 class="pick-title">Let's start with something simple</h1>
+              <p class="pick-subtitle">No prep needed</p>
+            </div>
+
+            <!-- Treat list + shuffle -->
+            <div class="pick-list-wrap">
+              <div class="pick-list" id="pick-list" role="group" aria-label="Choose a treat">
+                <!-- Cards injected by JS -->
+              </div>
+              <button type="button" class="pick-shuffle" id="shuffle-btn" aria-label="Shuffle treats">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <path d="M16 3h5v5M4 20l5.5-5.5M21 3l-6.5 6.5M16 21h5v-5M4 4l5.5 5.5M21 21l-6.5-6.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+            </div>
+
+            <!-- CTA -->
+            <div class="pick-cta-group">
+              <button type="button" class="pick-cta-btn" id="cta-btn" disabled>
+                All set for tomorrow
+              </button>
+              <p class="pick-footer-note">That's all you need. Sleep well</p>
+            </div>
+
+            <!-- Sun -->
+            <div class="sun" aria-hidden="true">
+              <img class="sun-img" src="./assets/logo/sun.png" alt="" width="119" height="117" />
+            </div>
+
+          </div>
+        </section>
+
+                                        <nav class="bottom-nav" aria-label="Bottom navigation">
+          <div class="bottom-nav-inner">
+            <a class="nav-btn nav-active" href="index.html" aria-label="Home">
+              <img class="nav-home nav-icon-default" src="assets/icons/nav/home.svg" alt="" />
+              <img class="nav-home nav-icon-active"  src="assets/icons/nav/home-active.png" alt="" />
+            </a>
+            <a class="nav-btn" href="add.html" aria-label="Add">
+              <img class="nav-plus nav-icon-default" src="assets/icons/nav/add.svg" alt="" />
+              <img class="nav-plus nav-icon-active"  src="assets/icons/nav/add-active.png" alt="" />
+            </a>
+            <a class="nav-btn" href="calendar.html" aria-label="Calendar">
+              <img class="nav-cal nav-icon-default" src="assets/icons/nav/calendar.svg" alt="" />
+              <img class="nav-cal nav-icon-active"  src="assets/icons/nav/calendar-active.png" alt="" />
+            </a>
+          </div>
+        </nav>
+        <div class="home-indicator" aria-hidden="true"></div>
+
+      </main>
+    </div>
+
+    <script>
+      (function () {
+
+        /* ── Treat pool (no-prep type) ──────────────────────── */
+        var POOL = [
+          { name: "Listen to music",  icon: "./assets/icons/treats/music.svg",        color: "#e5deff", sub: "No setup needed \u2014 just hit play" },
+          { name: "Nice shower",      icon: "./assets/icons/treats/shower.svg",       color: "#d4eeff", sub: "Nothing to prepare, just step in" },
+          { name: "Morning walk",     icon: "./assets/icons/treats/walk.svg",         color: "#d0f3c1", sub: "Step outside and breathe the fresh air" },
+          { name: "Water your plants",icon: "./assets/icons/treats/water-plants.svg", color: "#c8f5d4", sub: "A small act of care to start your day" },
+          { name: "Hug your pet",     icon: "./assets/icons/treats/hug-your-pet.svg", color: "#ffd3ea", sub: "Unconditional love to wake up to" }
+        ];
+
+        var offset    = 0;
+        var selected  = null;
+
+        var listEl    = document.getElementById("pick-list");
+        var ctaBtn    = document.getElementById("cta-btn");
+        var shuffleBtn= document.getElementById("shuffle-btn");
+
+        /* ── Visible set of 3 ─────────────────────────────── */
+        function visibleTreats() {
+          var out = [];
+          for (var i = 0; i < 3; i++) {
+            out.push(POOL[(offset + i) % POOL.length]);
+          }
+          return out;
+        }
+
+        /* ── Render ──────────────────────────────────────── */
+        function render() {
+          listEl.innerHTML = "";
+          selected = null;
+          ctaBtn.disabled = true;
+          ctaBtn.classList.remove("active");
+
+          var treats = visibleTreats();
+          treats.forEach(function (treat, i) {
+            var card = document.createElement("div");
+            card.className = "pick-card";
+            card.setAttribute("role", "button");
+            card.setAttribute("tabindex", "0");
+            card.setAttribute("aria-pressed", "false");
+            card.dataset.idx = String(i);
+
+            card.innerHTML =
+              '<div class="pick-card-row">' +
+                '<div class="pick-card-left">' +
+                  '<img class="pick-card-icon" src="' + treat.icon + '" width="32" height="32" alt="" />' +
+                  '<div>' +
+                    '<p class="pick-card-title">' + treat.name + '</p>' +
+                    '<p class="pick-card-desc">' + treat.sub + '</p>' +
+                  '</div>' +
+                '</div>' +
+                '<button type="button" class="pick-chevron" aria-label="Show description" aria-expanded="false">' +
+                  '<svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
+                    '<path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>' +
+                  '</svg>' +
+                '</button>' +
+              '</div>';
+
+            /* Chevron: show/hide subtitle */
+            var chevron = card.querySelector(".pick-chevron");
+            var desc    = card.querySelector(".pick-card-desc");
+            chevron.addEventListener("click", function (e) {
+              e.stopPropagation();
+              var open = desc.classList.toggle("visible");
+              chevron.classList.toggle("open", open);
+              chevron.setAttribute("aria-expanded", String(open));
+            });
+
+            /* Card body: toggle selection + color */
+            card.addEventListener("click", function (e) {
+              if (e.target === chevron || chevron.contains(e.target)) return;
+
+              var isSelected = card.classList.contains("selected");
+
+              /* Deselect all */
+              listEl.querySelectorAll(".pick-card").forEach(function (c) {
+                c.classList.remove("selected");
+                c.style.background = "";
+                c.setAttribute("aria-pressed", "false");
+              });
+
+              if (isSelected) {
+                selected = null;
+                ctaBtn.disabled = true;
+                ctaBtn.classList.remove("active");
+              } else {
+                card.classList.add("selected");
+                card.style.background = treat.color;
+                card.setAttribute("aria-pressed", "true");
+                selected = i;
+                ctaBtn.disabled = false;
+                ctaBtn.classList.add("active");
+              }
+            });
+
+            listEl.appendChild(card);
+          });
+        }
+
+        /* ── Shuffle ─────────────────────────────────────── */
+        shuffleBtn.addEventListener("click", function () {
+          offset = (offset + 1) % POOL.length;
+          render();
+        });
+
+        /* ── "All set for tomorrow" ───────────────────────── */
+        ctaBtn.addEventListener("click", function () {
+          if (selected === null) return;
+          var treat = visibleTreats()[selected];
+
+          var existing = [];
+          try { existing = JSON.parse(sessionStorage.getItem("morningTreats")) || []; }
+          catch (e) { existing = []; }
+
+          var alreadyAdded = existing.some(function (t) {
+            return t.name === treat.name && t.status === "pending";
+          });
+
+          if (!alreadyAdded) {
+            existing.push({
+              name:     treat.name,
+              icon:     treat.icon,
+              color:    treat.color,
+              type:     "noprep",
+              status:   "pending",
+              prepared: false
+            });
+            sessionStorage.setItem("morningTreats", JSON.stringify(existing));
+          }
+
+          window.location.href = "index.html";
+        });
+
+        /* ── Init ────────────────────────────────────────── */
+        render();
+
+      })();
+    </script>
+  </body>
+</html>

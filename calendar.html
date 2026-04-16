@@ -1,0 +1,785 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Calendar</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@100..900&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+    <style>
+      /* ── Calendar-specific styles ─────────────────────────── */
+
+      .cal-scroll {
+        position: absolute;
+        top: 64px;
+        left: 0;
+        width: 393px;
+        height: 692px;
+        overflow-y: auto;
+        overflow-x: hidden;
+        padding: 10px 24px 20px;
+        background: var(--cream);
+        scrollbar-width: none;
+      }
+      .cal-scroll::-webkit-scrollbar { display: none; }
+
+      .cal-inner {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 24px;
+        width: 345px;
+      }
+
+      /* Back button */
+      .cal-back-btn {
+        padding: 5px 0;
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 24px;
+        height: 34px;
+      }
+
+      /* Heading */
+      .cal-heading {
+        font-size: 24px;
+        font-weight: 700;
+        line-height: 1.3;
+        color: var(--ink);
+        margin: 0;
+        width: 100%;
+      }
+
+      /* Calendar card */
+      .cal-card {
+        width: 100%;
+        border: 2px solid var(--grey);
+        border-radius: 10px;
+        padding: 20px 10px 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        background: var(--cream);
+      }
+
+      .cal-month-row {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        width: 100%;
+        padding-right: 14px;
+      }
+
+      .cal-month-copy {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        color: var(--ink);
+      }
+
+      .cal-year-label {
+        font-size: 17px;
+        font-weight: 400;
+        line-height: 1.3;
+        margin: 0;
+      }
+
+      .cal-month-name {
+        font-size: 24px;
+        font-weight: 700;
+        line-height: 1.3;
+        margin: 0;
+      }
+
+      .cal-month-chevron {
+        width: 24px;
+        height: 24px;
+        display: block;
+        transform: rotate(90deg);
+        opacity: 0.6;
+      }
+
+      /* Grid */
+      .cal-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+        width: 100%;
+      }
+
+      .cal-hdr-row {
+        display: grid;
+        grid-template-columns: repeat(7, 40px);
+        gap: 7px;
+        justify-content: center;
+        margin-bottom: 4px;
+      }
+
+      .cal-hdr-cell {
+        width: 40px;
+        text-align: center;
+        font-size: 14px;
+        font-weight: 400;
+        line-height: 1.3;
+        color: var(--ink);
+      }
+
+      .cal-week-row {
+        display: grid;
+        grid-template-columns: repeat(7, 40px);
+        gap: 7px;
+        justify-content: center;
+        margin-bottom: 8px;
+      }
+
+      /* Date cell */
+      .cal-cell {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+        align-items: center;
+        width: 40px;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      .cal-cell--empty {
+        cursor: default;
+      }
+
+      /* Circle */
+      .cal-circle {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        overflow: hidden;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        transition: box-shadow 0.15s;
+      }
+
+      /* Empty day: very light grey fill */
+      .cal-circle--blank {
+        background: var(--cream);
+        border: 1px solid rgba(185, 182, 171, 0.45);
+      }
+
+      /* Day with an entry */
+      .cal-circle--entry {
+        border: 1px solid var(--ink);
+        background: var(--cream);
+      }
+
+      /* Today: cream (no yellow fill — yellow lives on the number badge only) */
+      .cal-circle--today {
+        background: var(--cream);
+        border: 1.5px solid var(--grey);
+      }
+
+      /* Number wrapper for non-today dates */
+      .cal-num-wrap {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        margin-top: 1px;
+      }
+
+      /* Selected date: yellow circle appears behind the number */
+      .cal-num--sel {
+        background: var(--yellow) !important;
+      }
+
+      /* Today badge when a different day is selected — hide the yellow */
+      .cal-num--today-inactive {
+        background: transparent !important;
+        border-color: transparent !important;
+      }
+
+      .cal-circle img.cal-photo {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+        border-radius: 50%;
+      }
+
+      .cal-circle img.cal-icon {
+        width: 20px;
+        height: 20px;
+        display: block;
+        object-fit: contain;
+      }
+
+      .cal-num {
+        font-size: 14px;
+        font-weight: 400;
+        line-height: 1.3;
+        color: var(--ink);
+        text-align: center;
+        min-width: 20px;
+      }
+
+      /* Today number: yellow badge */
+      .cal-num--today-wrap {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: var(--yellow);
+        border: 1px solid var(--grey);
+        margin-top: 1px;
+      }
+
+      .cal-num--today-wrap .cal-num {
+        font-size: 14px;
+        font-weight: 700;
+        line-height: 1;
+      }
+
+      /* Detail card */
+      .cal-detail {
+        width: 100%;
+        background: var(--card-tan);
+        border-radius: 20px;
+        padding: 20px;
+        display: none;
+        flex-direction: column;
+        gap: 14px;
+      }
+
+      .cal-detail-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        gap: 8px;
+      }
+
+      .cal-detail-left {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-shrink: 0;
+      }
+
+      .cal-detail-thumb {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        overflow: hidden;
+        border: 0.4px solid var(--ink);
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--cream);
+      }
+
+      .cal-detail-thumb img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+
+      .cal-detail-thumb img.icon {
+        width: 20px;
+        height: 20px;
+        object-fit: contain;
+      }
+
+      .cal-detail-time {
+        font-size: 14px;
+        font-weight: 400;
+        line-height: 1.3;
+        color: var(--ink);
+        white-space: nowrap;
+      }
+
+      .cal-detail-moods {
+        display: flex;
+        gap: 4px;
+        align-items: center;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+      }
+
+      .cal-detail-mood-pill {
+        background: var(--ink);
+        border: 1.2px solid var(--ink);
+        color: var(--cream);
+        padding: 6px 12px;
+        border-radius: 100px;
+        font-size: 12px;
+        font-weight: 500;
+        line-height: normal;
+        white-space: nowrap;
+      }
+
+      .cal-detail-note {
+        font-size: 15px;
+        font-weight: 500;
+        line-height: normal;
+        color: var(--ink);
+        margin: 0;
+        width: 100%;
+        word-break: break-word;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="device-shell">
+      <main class="phone">
+
+        <!-- Status bar -->
+        <div class="done-top-safe">
+          <div class="dynamic-island" aria-hidden="true"></div>
+        </div>
+
+        <!-- Scrollable content -->
+        <div class="cal-scroll" id="cal-scroll">
+          <div class="cal-inner">
+
+            <!-- Back arrow -->
+            <button
+              class="cal-back-btn"
+              type="button"
+              onclick="window.location='index.html'"
+              aria-label="Back to home"
+            >
+              <!-- Chevron left -->
+              <svg width="10" height="18" viewBox="0 0 10 18" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <path d="M9 1L1 9L9 17" stroke="#4E4B3D" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+
+            <!-- Page heading -->
+            <h1 class="cal-heading">My calendar</h1>
+
+            <!-- Calendar grid card -->
+            <div class="cal-card">
+              <div class="cal-month-row">
+                <div class="cal-month-copy">
+                  <p class="cal-year-label" id="cal-year">2026</p>
+                  <p class="cal-month-name" id="cal-month">March</p>
+                </div>
+                <img
+                  class="cal-month-chevron"
+                  src="https://www.figma.com/api/mcp/asset/24aeda08-6a88-404a-8601-6122dc8c0742"
+                  alt=""
+                  aria-hidden="true"
+                />
+              </div>
+              <div class="cal-grid" id="cal-grid">
+                <!-- Built by JS -->
+              </div>
+            </div>
+
+            <!-- Detail entry card (shown when a day with an entry is tapped) -->
+            <div class="cal-detail" id="cal-detail" role="region" aria-label="Selected entry">
+              <div class="cal-detail-top">
+                <div class="cal-detail-left">
+                  <div class="cal-detail-thumb" id="cal-thumb"></div>
+                  <span class="cal-detail-time" id="cal-time"></span>
+                </div>
+                <div class="cal-detail-moods" id="cal-moods"></div>
+              </div>
+              <p class="cal-detail-note" id="cal-note"></p>
+            </div>
+
+            <!-- Sun decoration -->
+            <div class="sun" aria-hidden="true">
+              <img class="sun-img" src="./assets/logo/sun.png" alt="" width="119" height="117" />
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Bottom nav -->
+                                        <nav class="bottom-nav" aria-label="Bottom navigation">
+          <div class="bottom-nav-inner">
+            <a class="nav-btn" href="index.html" aria-label="Home">
+              <img class="nav-home nav-icon-default" src="assets/icons/nav/home.svg" alt="" />
+              <img class="nav-home nav-icon-active"  src="assets/icons/nav/home-active.png" alt="" />
+            </a>
+            <a class="nav-btn" href="add.html" aria-label="Add">
+              <img class="nav-plus nav-icon-default" src="assets/icons/nav/add.svg" alt="" />
+              <img class="nav-plus nav-icon-active"  src="assets/icons/nav/add-active.png" alt="" />
+            </a>
+            <a class="nav-btn nav-active" href="calendar.html" aria-label="Calendar">
+              <img class="nav-cal nav-icon-default" src="assets/icons/nav/calendar.svg" alt="" />
+              <img class="nav-cal nav-icon-active"  src="assets/icons/nav/calendar-active.png" alt="" />
+            </a>
+          </div>
+        </nav>
+
+        <div class="home-indicator" aria-hidden="true"></div>
+      </main>
+    </div>
+
+    <script>
+    (function () {
+      /* ── Activity icon paths (same as done.html) ──────────────────── */
+      var ICONS = {
+        book:           "./assets/icons/treats/book.svg",
+        shower:         "./assets/icons/treats/shower.svg",
+        music:          "./assets/icons/treats/music.svg",
+        "warm-drink":   "./assets/icons/treats/warm-drink.svg",
+        "water-plants": "./assets/icons/treats/water-plants.svg",
+        journal:        "./assets/icons/treats/journal.svg",
+        pet:            "./assets/icons/treats/hug-your-pet.svg",
+        ootd:           "./assets/icons/treats/ootd.svg"
+      };
+
+      /* ── Entry data (same source as done.html, with added times) ──── */
+      var ENTRIES = [
+        {
+          date: "Mon, Mar 9",  day: 9,  month: 2, year: 2026,
+          time: "7:15am",
+          hasPhoto: false, activity: "journal",
+          moods: ["Ordinary"],
+          note: "Two minutes of gratitude before getting up."
+        },
+        {
+          date: "Tue, Mar 10", day: 10, month: 2, year: 2026,
+          time: "8:02am",
+          hasPhoto: true,  photo: "./assets/photos/pour-over-coffee.jpg",
+          moods: ["Peaceful", "Content"],
+          note: "Quiet morning with a pour-over coffee."
+        },
+        {
+          date: "Wed, Mar 11", day: 11, month: 2, year: 2026,
+          time: "7:45am",
+          hasPhoto: false, activity: "warm-drink",
+          moods: ["Productive"],
+          note: "Made a matcha before starting the day."
+        },
+        {
+          date: "Thu, Mar 12", day: 12, month: 2, year: 2026,
+          time: "7:30am",
+          hasPhoto: true,  photo: "./assets/photos/light-through-window.jpg",
+          moods: ["Peaceful"],
+          note: "Watched the light come through the curtains."
+        },
+        {
+          date: "Fri, Mar 13", day: 13, month: 2, year: 2026,
+          time: "8:20am",
+          hasPhoto: false, activity: "shower",
+          moods: ["Relieved"],
+          note: "Long hot shower, felt completely reset."
+        },
+        {
+          date: "Sat, Mar 14", day: 14, month: 2, year: 2026,
+          time: "9:10am",
+          hasPhoto: true,  photo: "./assets/photos/repot-succulent.png",
+          moods: ["Content", "Peaceful"],
+          note: "Watered my plants and repotted a succulent."
+        },
+        {
+          date: "Sun, Mar 15", day: 15, month: 2, year: 2026,
+          time: "9:30am",
+          hasPhoto: false, activity: "music",
+          moods: ["Peaceful"],
+          note: "Lay in bed listening to a whole album."
+        },
+        {
+          date: "Mon, Mar 16", day: 16, month: 2, year: 2026,
+          time: "7:50am",
+          hasPhoto: false, activity: "book",
+          moods: ["Content"],
+          note: "Read a chapter before starting the week."
+        },
+        {
+          date: "Tue, Mar 17", day: 17, month: 2, year: 2026,
+          time: "8:15am",
+          hasPhoto: true,  photo: "./assets/photos/see-sakura-when-walking.jpg",
+          moods: ["Content"],
+          note: "Spotted cherry blossoms on the way to class."
+        },
+        {
+          date: "Wed, Mar 18", day: 18, month: 2, year: 2026,
+          time: "7:10am",
+          hasPhoto: true,  photo: "./assets/photos/coffee-mug.jpg",
+          moods: ["Relieved"],
+          note: "Coffee and quiet — really needed this."
+        },
+        {
+          date: "Thu, Mar 19", day: 19, month: 2, year: 2026,
+          time: "8:00am",
+          isToday: true,
+          hasPhoto: false, activity: "ootd",
+          moods: [],
+          note: ""
+        }
+      ];
+
+      /* ── Build lookup: "year-month-day" → entry ──────────────────── */
+      var entryMap = {};
+      var todayEntry = null;
+      ENTRIES.forEach(function (e) {
+        entryMap[e.year + "-" + e.month + "-" + e.day] = e;
+        if (e.isToday) todayEntry = e;
+      });
+
+      /* ── Display month (drive from entries, always March 2026 here) ─ */
+      var MONTH_NAMES = [
+        "January","February","March","April","May","June",
+        "July","August","September","October","November","December"
+      ];
+      var dispYear  = 2026;
+      var dispMonth = 2; // 0-indexed March
+      document.getElementById("cal-year").textContent  = dispYear;
+      document.getElementById("cal-month").textContent = MONTH_NAMES[dispMonth];
+
+      /* ── Today: use isToday flag (prototype date = Mar 19) ───────── */
+      var protoTodayDay   = todayEntry ? todayEntry.day   : -1;
+      var protoTodayMonth = todayEntry ? todayEntry.month : -1;
+      var protoTodayYear  = todayEntry ? todayEntry.year  : -1;
+
+      /* ── Build calendar grid ─────────────────────────────────────── */
+      var DAY_HDRS = ["sun","mon","tue","wed","thu","fri","sat"];
+
+      function daysInMonth(y, m)   { return new Date(y, m + 1, 0).getDate(); }
+      function firstWeekDay(y, m)  { return new Date(y, m, 1).getDay(); }
+
+      function entryIconSrc(entry) {
+        return (entry && entry.directIcon) || (entry && ICONS[entry.activity]) || "";
+      }
+
+      function makeCircle(day, entry, isToday) {
+        var cls = "cal-circle";
+        if (isToday)       cls += " cal-circle--today";
+        else if (entry)    cls += " cal-circle--entry";
+        else               cls += " cal-circle--blank";
+
+        var inner = "";
+        if (entry && entry.hasPhoto) {
+          inner = '<img class="cal-photo" src="' + entry.photo + '" alt="" />';
+        } else if (entry && (entry.directIcon || entry.activity)) {
+          inner = '<img class="cal-icon" src="' + entryIconSrc(entry) + '" alt="" />';
+        }
+        return '<div class="' + cls + '" id="circle-' + day + '">' + inner + '</div>';
+      }
+
+      function makeNumLabel(day, isToday) {
+        if (isToday) {
+          return '<div class="cal-num--today-wrap" id="num-' + day + '"><span class="cal-num">' + day + '</span></div>';
+        }
+        return '<div class="cal-num-wrap" id="num-' + day + '"><span class="cal-num">' + day + '</span></div>';
+      }
+
+      function renderCalendar() {
+        var grid   = document.getElementById("cal-grid");
+        var total  = daysInMonth(dispYear, dispMonth);
+        var offset = firstWeekDay(dispYear, dispMonth); // Sun=0
+
+        /* Header row */
+        var hdrRow = document.createElement("div");
+        hdrRow.className = "cal-hdr-row";
+        DAY_HDRS.forEach(function (h) {
+          var cell = document.createElement("div");
+          cell.className = "cal-hdr-cell";
+          cell.textContent = h;
+          hdrRow.appendChild(cell);
+        });
+        grid.appendChild(hdrRow);
+
+        /* Build flat array: null = empty leading slot, number = date */
+        var slots = [];
+        for (var i = 0; i < offset; i++) slots.push(null);
+        for (var d = 1; d <= total; d++) slots.push(d);
+
+        /* Render week rows */
+        var weekIdx = 0;
+        while (weekIdx * 7 < slots.length) {
+          var row = document.createElement("div");
+          row.className = "cal-week-row";
+
+          for (var col = 0; col < 7; col++) {
+            var slotIdx = weekIdx * 7 + col;
+            var day     = slotIdx < slots.length ? slots[slotIdx] : null;
+
+            var cell = document.createElement("div");
+
+            if (day === null) {
+              /* Empty leading/trailing slot */
+              cell.style.width = "40px";
+            } else {
+              var key     = dispYear + "-" + dispMonth + "-" + day;
+              var entry   = entryMap[key] || null;
+              var isToday = (day === protoTodayDay && dispMonth === protoTodayMonth && dispYear === protoTodayYear);
+
+              cell.className = "cal-cell";
+              cell.setAttribute("aria-label", MONTH_NAMES[dispMonth] + " " + day);
+              cell.innerHTML = makeCircle(day, entry, isToday) + makeNumLabel(day, isToday);
+
+              /* All dates are selectable; null entry just hides the detail card */
+              (function (e, d) {
+                cell.addEventListener("click", function () {
+                  selectDay(d, e);
+                });
+              })(entry, day);
+            }
+
+            row.appendChild(cell);
+          }
+          grid.appendChild(row);
+          weekIdx++;
+        }
+      }
+
+      /* ── Selection state ─────────────────────────────────────────── */
+      var selectedDay = null;
+
+      function clearSelection() {
+        if (selectedDay !== null) {
+          var prevNum = document.getElementById("num-" + selectedDay);
+          if (prevNum) prevNum.classList.remove("cal-num--sel");
+          selectedDay = null;
+        }
+        /* Restore today badge if it was suppressed */
+        if (protoTodayDay > 0) {
+          var todayNum = document.getElementById("num-" + protoTodayDay);
+          if (todayNum) todayNum.classList.remove("cal-num--today-inactive");
+        }
+        var det = document.getElementById("cal-detail");
+        det.style.display = "none";
+      }
+
+      function selectDay(day, entry) {
+        /* Remove previous selection highlight */
+        if (selectedDay !== null) {
+          var prevNum = document.getElementById("num-" + selectedDay);
+          if (prevNum) prevNum.classList.remove("cal-num--sel");
+        }
+
+        /* If a non-today day is selected, dim today's badge; otherwise restore it */
+        if (protoTodayDay > 0) {
+          var todayNum = document.getElementById("num-" + protoTodayDay);
+          if (todayNum) {
+            if (day !== protoTodayDay) {
+              todayNum.classList.add("cal-num--today-inactive");
+            } else {
+              todayNum.classList.remove("cal-num--today-inactive");
+            }
+          }
+        }
+
+        selectedDay = day;
+        var numEl = document.getElementById("num-" + day);
+        if (numEl) numEl.classList.add("cal-num--sel");
+
+        showDetail(entry);
+      }
+
+      /* ── Detail card ─────────────────────────────────────────────── */
+      function showDetail(entry) {
+        var det    = document.getElementById("cal-detail");
+        /* No entry → just hide the detail card */
+        if (!entry) { det.style.display = "none"; return; }
+
+        var thumb  = document.getElementById("cal-thumb");
+        var timeEl = document.getElementById("cal-time");
+        var moods  = document.getElementById("cal-moods");
+        var note   = document.getElementById("cal-note");
+
+        /* Thumbnail */
+        thumb.innerHTML = "";
+        if (entry.hasPhoto) {
+          var img = document.createElement("img");
+          img.src = entry.photo;
+          img.alt = "";
+          thumb.style.background = "none";
+          thumb.appendChild(img);
+        } else {
+          var iconImg = document.createElement("img");
+          iconImg.src = entryIconSrc(entry);
+          iconImg.alt = "";
+          iconImg.className = "icon";
+          thumb.style.background = "var(--cream)";
+          thumb.appendChild(iconImg);
+        }
+
+        /* Time */
+        timeEl.textContent = entry.time || "";
+
+        /* Mood pills */
+        moods.innerHTML = "";
+        (entry.moods || []).forEach(function (mood) {
+          var pill = document.createElement("span");
+          pill.className = "cal-detail-mood-pill";
+          pill.textContent = mood;
+          moods.appendChild(pill);
+        });
+
+        /* Note */
+        note.textContent = entry.note || "";
+
+        det.style.display = "flex";
+
+        /* Smooth scroll to reveal the card */
+        setTimeout(function () {
+          det.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        }, 50);
+      }
+
+      /* ── Apply saved data from done.html to today's entry ──────── */
+      (function () {
+        var todayCalEntry = entryMap[protoTodayYear + "-" + protoTodayMonth + "-" + protoTodayDay];
+        if (!todayCalEntry) return;
+
+        var savedMoods = [];
+        var savedNote  = "";
+        try {
+          savedMoods = JSON.parse(sessionStorage.getItem("savedMoods")) || [];
+          savedNote  = sessionStorage.getItem("savedNote") || "";
+        } catch (e) {}
+        var savedPhoto = sessionStorage.getItem("savedPhoto") || "";
+        var savedIcon  = sessionStorage.getItem("savedIcon")  || "";
+
+        if (savedMoods.length) todayCalEntry.moods = savedMoods;
+        if (savedNote)         todayCalEntry.note  = savedNote;
+        if (savedPhoto) {
+          todayCalEntry.hasPhoto   = true;
+          todayCalEntry.photo      = savedPhoto;
+          todayCalEntry.directIcon = "";
+        } else if (savedIcon) {
+          todayCalEntry.hasPhoto   = false;
+          todayCalEntry.directIcon = savedIcon;
+        }
+      })();
+
+      /* ── Init ────────────────────────────────────────────────────── */
+      renderCalendar();
+
+      /* Pre-select: today if data saved, otherwise most recent entry */
+      var hasSavedData = !!(sessionStorage.getItem("savedMoods") || sessionStorage.getItem("savedPhoto") || sessionStorage.getItem("savedIcon"));
+      if (hasSavedData && protoTodayDay > 0) {
+        var todayCE = entryMap[protoTodayYear + "-" + protoTodayMonth + "-" + protoTodayDay];
+        selectDay(protoTodayDay, todayCE || null);
+      } else {
+        var defaultEntry = entryMap["2026-2-18"];
+        if (defaultEntry) selectDay(18, defaultEntry);
+      }
+
+    })();
+    </script>
+  </body>
+</html>

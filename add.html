@@ -1,0 +1,1721 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Add Treats</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@100..900&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+    <style>
+      /* ── Add-screen-specific styles ──────────────────────── */
+
+      .add-scroll {
+        position: absolute;
+        top: 64px;
+        left: 0;
+        width: 393px;
+        height: 692px;
+        overflow-y: auto;
+        overflow-x: hidden;
+        background: var(--cream);
+        scrollbar-width: none;
+      }
+      .add-scroll::-webkit-scrollbar { display: none; }
+
+      .add-inner {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 45px;
+        padding: 54px 24px 0;
+        width: 100%;
+      }
+
+      /* ── My Favourites ──────────────────────────────────── */
+
+      .add-fav-section {
+        display: flex;
+        flex-direction: column;
+        gap: 28px;
+        width: 100%;
+      }
+
+      .add-section-title {
+        font-size: 24px;
+        font-weight: 700;
+        line-height: 1.3;
+        color: var(--ink);
+        margin: 0;
+      }
+
+      .favs-row {
+        /* bleed to both edges — no right padding */
+        margin-left: -24px;
+        width: calc(100% + 48px);
+        overflow-x: auto;
+        overflow-y: hidden;
+        scrollbar-width: none;
+        -webkit-overflow-scrolling: touch;
+        display: flex;
+        gap: 8px;
+        padding: 4px 0 8px 24px;
+      }
+      .favs-row::-webkit-scrollbar { display: none; }
+
+      .fav-card {
+        flex-shrink: 0;
+        width: 105px;
+        height: 105px;
+        border-radius: 10px;
+        padding: 10px;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: center;
+        gap: 22px;
+      }
+
+      .fav-card-icon {
+        width: 31px;
+        height: 31px;
+        flex-shrink: 0;
+        display: block;
+        object-fit: contain;
+      }
+
+      .fav-card-name {
+        font-size: 15px;
+        font-weight: 600;
+        line-height: 1.3;
+        color: var(--ink);
+      }
+
+      /* ── Treat discovery ────────────────────────────────── */
+
+      .add-discovery {
+        display: flex;
+        flex-direction: column;
+        gap: 32px;
+        width: 100%;
+      }
+
+      /* Filter tabs row */
+      .add-filter {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        width: 100%;
+      }
+
+      .add-filter-tabs {
+        display: flex;
+        gap: 43px;
+        align-items: center;
+      }
+
+      .add-tab {
+        padding: 10px 0;
+        border: none;
+        border-bottom: 3px solid var(--ink);
+        background: transparent;
+        font-family: inherit;
+        font-size: 24px;
+        font-weight: 700;
+        line-height: 1.3;
+        color: var(--ink);
+        cursor: pointer;
+        white-space: nowrap;
+      }
+
+      .add-tab--inactive {
+        color: var(--muted-letter);
+        border-bottom-color: transparent;
+        font-weight: 400;
+      }
+
+      .add-filter-plus {
+        width: 38px;
+        height: 38px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        cursor: pointer;
+        border: none;
+        background: transparent;
+        padding: 0;
+      }
+
+      /* Search bar */
+      .add-search {
+        width: 100%;
+        height: 46px;
+        background: var(--card-tan);
+        border-radius: 100px;
+        border: none;
+        padding: 0 21px;
+        font-family: inherit;
+        font-size: 14px;
+        font-weight: 400;
+        line-height: 1.3;
+        color: var(--ink);
+        outline: none;
+      }
+
+      .add-search::placeholder {
+        color: var(--ink);
+        opacity: 0.6;
+      }
+
+      /* Treat list */
+      .treat-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        width: 100%;
+      }
+
+      .treat-item {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        padding: 15px 20px;
+        border-radius: 15px;
+        width: 100%;
+      }
+
+      .treat-item-info {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+      }
+
+      .treat-item-icon {
+        width: 32px;
+        height: 32px;
+        flex-shrink: 0;
+        display: block;
+        object-fit: contain;
+      }
+
+      .treat-item-name {
+        font-size: 17px;
+        font-weight: 700;
+        line-height: 1.3;
+        color: var(--ink);
+        margin: 0;
+      }
+
+      .treat-add-btn {
+        display: flex;
+        align-items: center;
+        gap: 2px;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        font-family: inherit;
+        padding: 0;
+        flex-shrink: 0;
+      }
+
+      .treat-add-btn img {
+        width: 16px;
+        height: 16px;
+        display: block;
+        flex-shrink: 0;
+      }
+
+      .treat-add-btn span {
+        font-size: 14px;
+        font-weight: 500;
+        line-height: 1.3;
+        color: var(--muted-letter);
+      }
+
+      /* ── Overlay ─────────────────────────────────────────── */
+
+      .overlay-backdrop {
+        position: absolute;
+        inset: 0;
+        background: rgba(78, 75, 61, 0.45);
+        z-index: 200;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 48px;
+      }
+
+      .overlay-card {
+        background: var(--cream);
+        border: 1px solid var(--ink);
+        border-radius: 30px;
+        width: 294px;
+        padding: 28px 24px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+      }
+
+      .overlay-title {
+        font-size: 24px;
+        font-weight: 500;
+        line-height: 1.3;
+        color: var(--ink);
+        margin: 0;
+        text-align: center;
+      }
+
+      .overlay-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        width: 216px;
+        padding: 16px 24px;
+        border-radius: 100px;
+        border: none;
+        font-family: inherit;
+        font-size: 17px;
+        font-weight: 500;
+        line-height: normal;
+        color: var(--ink);
+        cursor: pointer;
+        white-space: nowrap;
+        transition: opacity 0.15s;
+      }
+
+      .overlay-btn-morning { background: #fff5c5; }
+      .overlay-btn-fav     { background: #ffd3ea; }
+
+      .overlay-btn-icon {
+        width: 24px;
+        height: 24px;
+        flex-shrink: 0;
+        display: block;
+        object-fit: contain;
+      }
+
+      .overlay-btn--disabled {
+        opacity: 0.45;
+        cursor: default;
+      }
+
+      /* ── Enter new treat overlay ─────────────────────────── */
+
+      .new-treat-overlay {
+        position: absolute;
+        top: 64px;
+        left: 0;
+        width: 393px;
+        height: 692px;
+        background: var(--cream);
+        z-index: 150;
+        overflow-y: auto;
+        overflow-x: hidden;
+        scrollbar-width: none;
+      }
+      .new-treat-overlay::-webkit-scrollbar { display: none; }
+
+      .new-treat-col {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 64px;
+        padding-bottom: 0;
+      }
+
+      .new-treat-card {
+        width: 393px;
+        background: #fffceb;
+        border-radius: 0 0 40px 40px;
+        box-shadow: 0 4px 8px rgba(78, 75, 61, 0.25);
+        padding: 28px 24px 33px;
+        display: flex;
+        flex-direction: column;
+        gap: 32px;
+        flex-shrink: 0;
+      }
+
+      .new-treat-card-hdr {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+      }
+
+      .new-treat-icon-btn {
+        width: 74px;
+        height: 74px;
+        border: none;
+        background: transparent;
+        padding: 0;
+        cursor: pointer;
+        display: block;
+        flex-shrink: 0;
+      }
+      .new-treat-icon-btn img { width: 100%; height: 100%; display: block; object-fit: contain; }
+
+      .new-treat-close-btn {
+        width: 32px;
+        height: 32px;
+        border: none;
+        background: transparent;
+        padding: 0;
+        cursor: pointer;
+        display: block;
+        flex-shrink: 0;
+        margin-top: 6px;
+      }
+      .new-treat-close-btn img { width: 100%; height: 100%; display: block; }
+
+      .new-treat-name-input {
+        background: transparent;
+        border: none;
+        outline: none;
+        font-family: inherit;
+        font-size: 24px;
+        font-weight: 500;
+        color: var(--ink);
+        width: 100%;
+        padding: 0;
+        line-height: 1.3;
+      }
+      .new-treat-name-input::placeholder { color: var(--muted-letter); }
+
+      .new-treat-type-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .new-treat-type-tabs {
+        display: flex;
+        gap: 18px;
+        align-items: center;
+      }
+
+      .new-treat-type-btn {
+        background: var(--cream);
+        border: 2px solid var(--grey);
+        border-radius: 10px;
+        padding: 10px;
+        font-family: inherit;
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--muted-letter);
+        cursor: pointer;
+        transition: border-color 0.15s, color 0.15s;
+      }
+      .new-treat-type-btn.nt-active {
+        border-color: var(--ink);
+        color: var(--ink);
+      }
+
+      .new-treat-fav-btn {
+        position: relative;
+        width: 49px;
+        height: 49px;
+        border: none;
+        background: transparent;
+        padding: 0;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+      .nt-fav-circle {
+        position: absolute;
+        inset: 0;
+        border-radius: 50%;
+        background: var(--grey);
+        transition: background 0.2s;
+      }
+      .nt-fav-heart {
+        position: relative;
+        width: 22px;
+        height: 22px;
+        fill: var(--cream);
+        transition: fill 0.2s;
+        flex-shrink: 0;
+      }
+      .new-treat-fav-btn.nt-fav-active .nt-fav-circle {
+        background: #4e4b3d;
+      }
+      .new-treat-fav-btn.nt-fav-active .nt-fav-heart {
+        fill: #FFB5D8;
+      }
+
+      .new-treat-plan-section {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+      }
+
+      .new-treat-plan-label {
+        font-size: 20px;
+        font-weight: 700;
+        color: #333;
+        margin: 0;
+        line-height: 1.3;
+      }
+
+      .new-treat-plan-box {
+        background: var(--cream);
+        border-radius: 10px;
+        height: 162px;
+        padding: 18px 10px 10px;
+      }
+
+      .new-treat-plan-input {
+        width: 100%;
+        height: 100%;
+        background: transparent;
+        border: none;
+        outline: none;
+        font-family: inherit;
+        font-size: 15px;
+        font-weight: 500;
+        color: var(--ink);
+        resize: none;
+        display: block;
+      }
+      .new-treat-plan-input::placeholder { color: var(--muted-letter); }
+
+      .new-treat-save-row {
+        display: flex;
+        justify-content: flex-end;
+      }
+
+      .new-treat-save-btn {
+        background: var(--grey);
+        border: none;
+        border-radius: 1000px;
+        padding: 10px 20px;
+        font-family: inherit;
+        font-size: 17px;
+        font-weight: 700;
+        color: var(--ink);
+        cursor: default;
+        transition: background 0.2s, color 0.2s;
+      }
+      .new-treat-save-btn.nt-ready {
+        background: var(--ink);
+        color: var(--cream);
+        cursor: pointer;
+      }
+
+      /* Suggestion section */
+      .new-treat-suggest-wrap {
+        width: 345px;
+        display: flex;
+        flex-direction: column;
+        gap: 21px;
+        flex-shrink: 0;
+      }
+
+      .new-treat-suggest-title {
+        font-size: 20px;
+        font-weight: 700;
+        color: #333;
+        margin: 0;
+        line-height: 1.3;
+      }
+
+      .new-treat-suggest-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        width: 100%;
+      }
+
+      .new-treat-suggest-item {
+        background: var(--card-tan);
+        border-radius: 15px;
+        padding: 20px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        cursor: pointer;
+        width: 100%;
+        border: none;
+        font-family: inherit;
+        text-align: left;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .new-treat-suggest-item:active { opacity: 0.75; }
+
+      .new-treat-suggest-icon {
+        width: 32px;
+        height: 32px;
+        flex-shrink: 0;
+        display: block;
+        object-fit: contain;
+      }
+
+      .new-treat-suggest-name {
+        font-size: 15px;
+        font-weight: 700;
+        color: var(--ink);
+      }
+
+      /* ── Icon / Colour picker ────────────────────────────── */
+
+      .ip-backdrop {
+        position: absolute;
+        inset: 0;
+        background: rgba(78, 75, 61, 0.35);
+        z-index: 200;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 48px;
+      }
+
+      .ip-card {
+        background: var(--cream);
+        border: 1px solid var(--grey);
+        border-radius: 30px;
+        width: 340px;
+        max-height: 560px;
+        overflow-y: auto;
+        scrollbar-width: none;
+        padding: 22px 23px;
+        display: flex;
+        flex-direction: column;
+        gap: 40px;
+      }
+      .ip-card::-webkit-scrollbar { display: none; }
+
+      .ip-section {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+      }
+
+      .ip-section-title {
+        font-size: 24px;
+        font-weight: 600;
+        color: var(--ink);
+        margin: 0;
+        line-height: 1.3;
+      }
+
+      .ip-search-bar {
+        background: var(--card-tan);
+        border-radius: 100px;
+        height: 46px;
+        display: flex;
+        align-items: center;
+        padding: 0 21px;
+      }
+
+      .ip-search-input {
+        background: transparent;
+        border: none;
+        outline: none;
+        font-family: inherit;
+        font-size: 15px;
+        font-weight: 400;
+        color: var(--ink);
+        width: 100%;
+      }
+      .ip-search-input::placeholder { color: var(--ink); opacity: 0.6; }
+
+      .ip-icon-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+      }
+
+      .ip-icon-row {
+        display: flex;
+        gap: 32px;
+        align-items: center;
+      }
+
+      .ip-icon-btn {
+        width: 32px;
+        height: 32px;
+        border: none;
+        background: transparent;
+        padding: 2px;
+        cursor: pointer;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        transition: background 0.15s;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .ip-icon-btn img {
+        display: block;
+        width: auto;
+        height: auto;
+        max-width: 26px;
+        max-height: 26px;
+        flex-shrink: 0;
+      }
+      .ip-icon-btn.ip-icon-sel {
+        background: rgba(78, 75, 61, 0.12);
+        outline: 2px solid var(--ink);
+        border-radius: 6px;
+      }
+
+      .ip-selected-color-wrap {
+        background: var(--card-tan);
+        border-radius: 15px;
+        padding: 10px;
+        width: 160px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .ip-color-swatch {
+        width: 32px;
+        height: 32px;
+        border-radius: 5px;
+        flex-shrink: 0;
+        background: var(--ink);
+        transition: background 0.2s;
+      }
+
+      .ip-color-label {
+        font-size: 15px;
+        font-weight: 400;
+        color: var(--ink);
+        line-height: 1.3;
+      }
+
+      .ip-color-rows {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+      }
+
+      .ip-color-row {
+        display: flex;
+        gap: 32px;
+        align-items: center;
+      }
+
+      .ip-color-btn {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        border: none;
+        cursor: pointer;
+        flex-shrink: 0;
+        transition: box-shadow 0.15s;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .ip-color-btn:disabled {
+        opacity: 0.25;
+        cursor: default;
+      }
+      .ip-color-btn.ip-color-sel {
+        box-shadow: 0 0 0 2.5px var(--cream), 0 0 0 4.5px var(--ink);
+      }
+
+      /* ── Toast notification ──────────────────────────────── */
+
+      .toast {
+        position: absolute;
+        top: 72px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: var(--ink);
+        color: var(--cream);
+        border-radius: 100px;
+        padding: 10px 20px;
+        font-size: 15px;
+        font-weight: 500;
+        line-height: 1.3;
+        white-space: nowrap;
+        z-index: 300;
+        pointer-events: none;
+        opacity: 1;
+        transition: opacity 0.4s;
+      }
+
+      .toast--hidden {
+        opacity: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="device-shell">
+      <main class="phone">
+
+        <!-- Status bar -->
+        <div class="top-safe">
+          <div class="dynamic-island" aria-hidden="true"></div>
+        </div>
+
+        <!-- Home back button -->
+        <button
+          type="button"
+          onclick="window.location.href='index.html'"
+          aria-label="Back to home"
+          style="position:absolute;top:72px;left:24px;z-index:3;background:none;border:none;padding:0;cursor:pointer;display:flex;align-items:center;color:var(--muted-letter);"
+        >
+          <svg width="10" height="18" viewBox="0 0 10 18" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M9 1L1 9L9 17" stroke="#4E4B3D" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+
+        <!-- Toast notification -->
+        <div class="toast toast--hidden" id="toast" aria-live="polite"></div>
+
+        <!-- Scrollable content -->
+        <div class="add-scroll">
+          <div class="add-inner">
+
+            <!-- My Favourites -->
+            <section class="add-fav-section">
+              <h2 class="add-section-title">My favourites</h2>
+              <div class="favs-row" role="list" aria-label="Favourite treats">
+                <div class="fav-card" role="listitem" style="background:#e5deff;" tabindex="0"
+                  data-name="2-minute journaling" data-icon="./assets/icons/treats/journal.svg" data-color="#e5deff" data-type="prep">
+                  <img class="fav-card-icon" src="./assets/icons/treats/journal.svg" width="31" height="31" alt="" />
+                  <div class="fav-card-name">2-minute<br>journaling</div>
+                </div>
+                <div class="fav-card" role="listitem" style="background:#fff5c5;" tabindex="0"
+                  data-name="Enjoy a warm drink" data-icon="./assets/icons/treats/warm-drink.svg" data-color="#fff5c5" data-type="prep">
+                  <img class="fav-card-icon" src="./assets/icons/treats/warm-drink.svg" width="31" height="31" alt="" />
+                  <div class="fav-card-name">Enjoy a<br>warm drink</div>
+                </div>
+                <div class="fav-card" role="listitem" style="background:#ffd3ea;" tabindex="0"
+                  data-name="Nice OOTD" data-icon="./assets/icons/treats/ootd.svg" data-color="#ffd3ea" data-type="prep">
+                  <img class="fav-card-icon" src="./assets/icons/treats/ootd.svg" width="31" height="31" alt="" />
+                  <div class="fav-card-name">Nice<br>OOTD</div>
+                </div>
+                <div class="fav-card" role="listitem" style="background:#d4eeff;" tabindex="0"
+                  data-name="Nice shower" data-icon="./assets/icons/treats/shower.svg" data-color="#d4eeff" data-type="noprep">
+                  <img class="fav-card-icon" src="./assets/icons/treats/shower.svg" width="31" height="31" alt="" />
+                  <div class="fav-card-name">Nice<br>shower</div>
+                </div>
+                <div class="fav-card" role="listitem" style="background:#ffe2b8;" tabindex="0"
+                  data-name="A simple breakfast" data-icon="./assets/icons/treats/breakfast.svg" data-color="#ffe2b8" data-type="prep">
+                  <img class="fav-card-icon" src="./assets/icons/treats/breakfast.svg" width="31" height="31" alt="" />
+                  <div class="fav-card-name">A simple<br>breakfast</div>
+                </div>
+                <div class="fav-card" role="listitem" style="background:#d0f3c1;" tabindex="0"
+                  data-name="Read a page" data-icon="./assets/icons/treats/book.svg" data-color="#d0f3c1" data-type="prep">
+                  <img class="fav-card-icon" src="./assets/icons/treats/book.svg" width="31" height="31" alt="" />
+                  <div class="fav-card-name">Read a<br>page</div>
+                </div>
+              </div>
+            </section>
+
+            <!-- Treat discovery -->
+            <div class="add-discovery">
+
+              <!-- Filter tabs + add-new button -->
+              <div class="add-filter">
+                <div class="add-filter-tabs">
+                  <button type="button" class="add-tab" id="tab-prep">Prep</button>
+                  <button type="button" class="add-tab add-tab--inactive" id="tab-noprep">No-prep</button>
+                </div>
+                <button type="button" class="add-filter-plus" aria-label="Enter new treat">
+                  <img
+                    src="https://www.figma.com/api/mcp/asset/09b488fd-0740-4703-84bc-35861cee7a7e"
+                    alt=""
+                    width="32"
+                    height="32"
+                    style="display:block;"
+                  />
+                </button>
+              </div>
+
+              <!-- Search -->
+              <input
+                id="add-search"
+                type="text"
+                class="add-search"
+                placeholder="Search treats..."
+                aria-label="Search treats"
+              />
+
+              <!-- Prep treat items -->
+              <div class="treat-list" id="list-prep" role="list">
+
+                <div class="treat-item" role="listitem" style="background:#ffd3ea;">
+                  <div class="treat-item-info">
+                    <img class="treat-item-icon" src="./assets/icons/treats/ootd.svg" width="32" height="32" alt="" />
+                    <p class="treat-item-name">Nice OOTD</p>
+                  </div>
+                  <button type="button" class="treat-add-btn"
+                    data-name="Nice OOTD"
+                    data-icon="./assets/icons/treats/ootd.svg"
+                    data-color="#ffd3ea"
+                    data-type="prep"
+                    aria-label="Add Nice OOTD">
+                    <img src="https://www.figma.com/api/mcp/asset/ee9cb088-1793-4eb4-b766-92a42bdff70c" width="16" height="16" alt="" />
+                    <span>add</span>
+                  </button>
+                </div>
+
+                <div class="treat-item" role="listitem" style="background:#ffd798;">
+                  <div class="treat-item-info">
+                    <img class="treat-item-icon" src="./assets/icons/treats/breakfast.svg" width="32" height="32" alt="" />
+                    <p class="treat-item-name">A simple breakfast</p>
+                  </div>
+                  <button type="button" class="treat-add-btn"
+                    data-name="A simple breakfast"
+                    data-icon="./assets/icons/treats/breakfast.svg"
+                    data-color="#ffd798"
+                    data-type="prep"
+                    aria-label="Add A simple breakfast">
+                    <img src="https://www.figma.com/api/mcp/asset/ee9cb088-1793-4eb4-b766-92a42bdff70c" width="16" height="16" alt="" />
+                    <span>add</span>
+                  </button>
+                </div>
+
+                <div class="treat-item" role="listitem" style="background:#d4eeff;">
+                  <div class="treat-item-info">
+                    <img class="treat-item-icon" src="./assets/icons/treats/shower.svg" width="32" height="32" alt="" />
+                    <p class="treat-item-name">Refreshing shower</p>
+                  </div>
+                  <button type="button" class="treat-add-btn"
+                    data-name="Refreshing shower"
+                    data-icon="./assets/icons/treats/shower.svg"
+                    data-color="#d4eeff"
+                    data-type="prep"
+                    aria-label="Add Refreshing shower">
+                    <img src="https://www.figma.com/api/mcp/asset/ee9cb088-1793-4eb4-b766-92a42bdff70c" width="16" height="16" alt="" />
+                    <span>add</span>
+                  </button>
+                </div>
+
+                <div class="treat-item" role="listitem" style="background:#d0f3c1;">
+                  <div class="treat-item-info">
+                    <img class="treat-item-icon" src="./assets/icons/treats/book.svg" width="32" height="32" alt="" />
+                    <p class="treat-item-name">Read a page</p>
+                  </div>
+                  <button type="button" class="treat-add-btn"
+                    data-name="Read a page"
+                    data-icon="./assets/icons/treats/book.svg"
+                    data-color="#d0f3c1"
+                    data-type="prep"
+                    aria-label="Add Read a page">
+                    <img src="https://www.figma.com/api/mcp/asset/ee9cb088-1793-4eb4-b766-92a42bdff70c" width="16" height="16" alt="" />
+                    <span>add</span>
+                  </button>
+                </div>
+
+                <div class="treat-item" role="listitem" style="background:#fff5c5;">
+                  <div class="treat-item-info">
+                    <img class="treat-item-icon" src="./assets/icons/treats/journal.svg" width="32" height="32" alt="" />
+                    <p class="treat-item-name">2-minute journaling</p>
+                  </div>
+                  <button type="button" class="treat-add-btn"
+                    data-name="2-minute journaling"
+                    data-icon="./assets/icons/treats/journal.svg"
+                    data-color="#fff5c5"
+                    data-type="prep"
+                    aria-label="Add 2-minute journaling">
+                    <img src="https://www.figma.com/api/mcp/asset/ee9cb088-1793-4eb4-b766-92a42bdff70c" width="16" height="16" alt="" />
+                    <span>add</span>
+                  </button>
+                </div>
+
+              </div>
+
+              <!-- No-prep treat items (hidden by default) -->
+              <div class="treat-list" id="list-noprep" role="list" style="display:none;">
+
+                <div class="treat-item" role="listitem" style="background:#d0f3c1;">
+                  <div class="treat-item-info">
+                    <img class="treat-item-icon" src="./assets/icons/treats/walk.svg" width="32" height="32" alt="" />
+                    <p class="treat-item-name">Morning walk</p>
+                  </div>
+                  <button type="button" class="treat-add-btn"
+                    data-name="Morning walk"
+                    data-icon="./assets/icons/treats/walk.svg"
+                    data-color="#d0f3c1"
+                    data-type="noprep"
+                    aria-label="Add Morning walk">
+                    <img src="https://www.figma.com/api/mcp/asset/ee9cb088-1793-4eb4-b766-92a42bdff70c" width="16" height="16" alt="" />
+                    <span>add</span>
+                  </button>
+                </div>
+
+                <div class="treat-item" role="listitem" style="background:#e5deff;">
+                  <div class="treat-item-info">
+                    <img class="treat-item-icon" src="./assets/icons/treats/music.svg" width="32" height="32" alt="" />
+                    <p class="treat-item-name">Listen to music</p>
+                  </div>
+                  <button type="button" class="treat-add-btn"
+                    data-name="Listen to music"
+                    data-icon="./assets/icons/treats/music.svg"
+                    data-color="#e5deff"
+                    data-type="noprep"
+                    aria-label="Add Listen to music">
+                    <img src="https://www.figma.com/api/mcp/asset/ee9cb088-1793-4eb4-b766-92a42bdff70c" width="16" height="16" alt="" />
+                    <span>add</span>
+                  </button>
+                </div>
+
+                <div class="treat-item" role="listitem" style="background:#d4eeff;">
+                  <div class="treat-item-info">
+                    <img class="treat-item-icon" src="./assets/icons/treats/water-plants.svg" width="32" height="32" alt="" />
+                    <p class="treat-item-name">Water your plants</p>
+                  </div>
+                  <button type="button" class="treat-add-btn"
+                    data-name="Water your plants"
+                    data-icon="./assets/icons/treats/water-plants.svg"
+                    data-color="#d4eeff"
+                    data-type="noprep"
+                    aria-label="Add Water your plants">
+                    <img src="https://www.figma.com/api/mcp/asset/ee9cb088-1793-4eb4-b766-92a42bdff70c" width="16" height="16" alt="" />
+                    <span>add</span>
+                  </button>
+                </div>
+
+                <div class="treat-item" role="listitem" style="background:#ffd3ea;">
+                  <div class="treat-item-info">
+                    <img class="treat-item-icon" src="./assets/icons/treats/hug-your-pet.svg" width="32" height="32" alt="" />
+                    <p class="treat-item-name">Hug your pet</p>
+                  </div>
+                  <button type="button" class="treat-add-btn"
+                    data-name="Hug your pet"
+                    data-icon="./assets/icons/treats/hug-your-pet.svg"
+                    data-color="#ffd3ea"
+                    data-type="noprep"
+                    aria-label="Add Hug your pet">
+                    <img src="https://www.figma.com/api/mcp/asset/ee9cb088-1793-4eb4-b766-92a42bdff70c" width="16" height="16" alt="" />
+                    <span>add</span>
+                  </button>
+                </div>
+
+                <div class="treat-item" role="listitem" style="background:#fff5c5;">
+                  <div class="treat-item-info">
+                    <img class="treat-item-icon" src="./assets/icons/treats/warm-drink.svg" width="32" height="32" alt="" />
+                    <p class="treat-item-name">Enjoy a warm drink</p>
+                  </div>
+                  <button type="button" class="treat-add-btn"
+                    data-name="Enjoy a warm drink"
+                    data-icon="./assets/icons/treats/warm-drink.svg"
+                    data-color="#fff5c5"
+                    data-type="noprep"
+                    aria-label="Add Enjoy a warm drink">
+                    <img src="https://www.figma.com/api/mcp/asset/ee9cb088-1793-4eb4-b766-92a42bdff70c" width="16" height="16" alt="" />
+                    <span>add</span>
+                  </button>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- Sun decoration -->
+            <div class="sun" aria-hidden="true">
+              <img class="sun-img" src="./assets/logo/sun.svg" alt="" width="119" height="117" />
+            </div>
+
+          </div>
+        </div>
+
+        <!-- "Add to" overlay -->
+        <div class="overlay-backdrop" id="overlay" style="display:none;" role="dialog" aria-modal="true" aria-label="Add treat to">
+          <div class="overlay-card" id="overlay-card">
+            <p class="overlay-title">Add to</p>
+            <button type="button" class="overlay-btn overlay-btn-morning" id="btn-morning">
+              <img class="overlay-btn-icon" src="https://www.figma.com/api/mcp/asset/9862f6f4-275e-4d3f-80b1-549736f000f0" alt="" />
+              <span>My morning</span>
+            </button>
+            <button type="button" class="overlay-btn overlay-btn-fav" id="btn-fav">
+              <img class="overlay-btn-icon" src="https://www.figma.com/api/mcp/asset/58a869ed-8952-4588-affe-7431dcea7481" alt="" />
+              <span id="btn-fav-label">My favorite</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- ── Enter new treat overlay ── -->
+        <div class="new-treat-overlay" id="new-treat-overlay" style="display:none;" role="dialog" aria-modal="true" aria-label="Enter new treat">
+          <div class="new-treat-col">
+
+            <!-- Card -->
+            <div class="new-treat-card">
+
+              <!-- Header: icon + close -->
+              <div class="new-treat-card-hdr">
+                <button type="button" class="new-treat-icon-btn" id="nt-icon-btn" aria-label="Choose an icon">
+                  <img src="https://www.figma.com/api/mcp/asset/9e08b622-84f8-448b-9f54-59af87356165" alt="" />
+                </button>
+                <button type="button" class="new-treat-close-btn" id="nt-close-btn" aria-label="Close">
+                  <img src="https://www.figma.com/api/mcp/asset/bfeae539-38d5-420b-9146-4f6a2a319779" alt="" />
+                </button>
+              </div>
+
+              <!-- Treat name -->
+              <input
+                type="text"
+                id="nt-name-input"
+                class="new-treat-name-input"
+                placeholder="Enter new treat"
+                aria-label="Treat name"
+                maxlength="60"
+                autocomplete="off"
+              />
+
+              <!-- Type toggles + favourite heart -->
+              <div class="new-treat-type-row">
+                <div class="new-treat-type-tabs">
+                  <button type="button" class="new-treat-type-btn nt-active" id="nt-prep-btn">Prep</button>
+                  <button type="button" class="new-treat-type-btn" id="nt-noprep-btn">No-prep</button>
+                </div>
+                <button type="button" class="new-treat-fav-btn" id="nt-fav-btn" aria-label="Add to favourites" aria-pressed="false">
+                  <div class="nt-fav-circle"></div>
+                  <svg class="nt-fav-heart" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                  </svg>
+                </button>
+              </div>
+
+              <!-- Prep plan (hidden in no-prep mode) -->
+              <div class="new-treat-plan-section" id="nt-plan-section">
+                <p class="new-treat-plan-label">Prep plan</p>
+                <div class="new-treat-plan-box">
+                  <textarea
+                    id="nt-plan-input"
+                    class="new-treat-plan-input"
+                    placeholder="• Enter your plan"
+                    aria-label="Prep plan"
+                  ></textarea>
+                </div>
+              </div>
+
+              <!-- Save -->
+              <div class="new-treat-save-row">
+                <button type="button" class="new-treat-save-btn" id="nt-save-btn" disabled>Save</button>
+              </div>
+
+            </div>
+
+            <!-- Suggestion section -->
+            <div class="new-treat-suggest-wrap">
+              <p class="new-treat-suggest-title">Suggestion</p>
+              <div class="new-treat-suggest-list" role="list">
+
+                <button type="button" class="new-treat-suggest-item" data-name="Play a favorite song"
+                  data-icon="https://www.figma.com/api/mcp/asset/ed59b8a7-27ba-46ca-b4ea-2f4277b71793" role="listitem">
+                  <img class="new-treat-suggest-icon" src="https://www.figma.com/api/mcp/asset/ed59b8a7-27ba-46ca-b4ea-2f4277b71793" alt="" />
+                  <span class="new-treat-suggest-name">play a favorite song</span>
+                </button>
+
+                <button type="button" class="new-treat-suggest-item" data-name="Drink water"
+                  data-icon="https://www.figma.com/api/mcp/asset/9781b816-e988-45d5-8c86-fb61a8caf4bd" role="listitem">
+                  <img class="new-treat-suggest-icon" src="https://www.figma.com/api/mcp/asset/9781b816-e988-45d5-8c86-fb61a8caf4bd" alt="" />
+                  <span class="new-treat-suggest-name">drink water</span>
+                </button>
+
+                <button type="button" class="new-treat-suggest-item" data-name="Open window"
+                  data-icon="https://www.figma.com/api/mcp/asset/ace666aa-8894-4cdb-8deb-eb2b72c25f1e" role="listitem">
+                  <img class="new-treat-suggest-icon" src="https://www.figma.com/api/mcp/asset/ace666aa-8894-4cdb-8deb-eb2b72c25f1e" alt="" />
+                  <span class="new-treat-suggest-name">open window</span>
+                </button>
+
+                <button type="button" class="new-treat-suggest-item" data-name="Turn on lights"
+                  data-icon="https://www.figma.com/api/mcp/asset/d0c44ddc-1ae6-4ea8-a8bb-3f5e05be253e" role="listitem">
+                  <img class="new-treat-suggest-icon" src="https://www.figma.com/api/mcp/asset/d0c44ddc-1ae6-4ea8-a8bb-3f5e05be253e" alt="" />
+                  <span class="new-treat-suggest-name">turn on lights</span>
+                </button>
+
+                <button type="button" class="new-treat-suggest-item" data-name="Ride your bike"
+                  data-icon="https://www.figma.com/api/mcp/asset/19bbe9e2-3025-471b-ba6a-39342f2bb95e" role="listitem">
+                  <img class="new-treat-suggest-icon" src="https://www.figma.com/api/mcp/asset/19bbe9e2-3025-471b-ba6a-39342f2bb95e" alt="" />
+                  <span class="new-treat-suggest-name">ride your bike</span>
+                </button>
+
+              </div>
+            </div>
+
+            <!-- Sun decoration -->
+            <div class="sun" aria-hidden="true">
+              <img class="sun-img" src="./assets/logo/sun.png" alt="" width="119" height="117" />
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ── Icon / Colour picker ── -->
+        <div class="ip-backdrop" id="ip-backdrop" style="display:none;" role="dialog" aria-modal="true" aria-label="Choose icon and colour">
+          <div class="ip-card" id="ip-card">
+
+            <!-- Icons -->
+            <div class="ip-section">
+              <h3 class="ip-section-title">Icons</h3>
+              <div class="ip-search-bar">
+                <input type="text" class="ip-search-input" id="ip-search" placeholder="Search icons" aria-label="Search icons" />
+              </div>
+              <div class="ip-icon-grid" id="ip-icon-grid">
+                <div class="ip-icon-row">
+                  <button type="button" class="ip-icon-btn" data-icon="https://www.figma.com/api/mcp/asset/0f3887fa-3178-4ca6-9d7e-54803821b256" data-label="coffee" aria-label="Coffee mug"><img src="https://www.figma.com/api/mcp/asset/0f3887fa-3178-4ca6-9d7e-54803821b256" alt="" /></button>
+                  <button type="button" class="ip-icon-btn" data-icon="https://www.figma.com/api/mcp/asset/88921f15-b456-44af-82cf-1eece0ab6990" data-label="shower" aria-label="Shower"><img src="https://www.figma.com/api/mcp/asset/88921f15-b456-44af-82cf-1eece0ab6990" alt="" /></button>
+                  <button type="button" class="ip-icon-btn" data-icon="https://www.figma.com/api/mcp/asset/670406da-842a-45b9-9635-f5700d6f7c18" data-label="book" aria-label="Book"><img src="https://www.figma.com/api/mcp/asset/670406da-842a-45b9-9635-f5700d6f7c18" alt="" /></button>
+                  <button type="button" class="ip-icon-btn" data-icon="https://www.figma.com/api/mcp/asset/f7a47d89-5ca5-47d0-a6c4-2d97a247f9de" data-label="pen" aria-label="Pen"><img src="https://www.figma.com/api/mcp/asset/f7a47d89-5ca5-47d0-a6c4-2d97a247f9de" alt="" /></button>
+                  <button type="button" class="ip-icon-btn" data-icon="https://www.figma.com/api/mcp/asset/fc608e1a-63a5-400f-8d4b-6caa4c794565" data-label="chat" aria-label="Chat"><img src="https://www.figma.com/api/mcp/asset/fc608e1a-63a5-400f-8d4b-6caa4c794565" alt="" /></button>
+                </div>
+                <div class="ip-icon-row">
+                  <button type="button" class="ip-icon-btn" data-icon="https://www.figma.com/api/mcp/asset/3a28a060-1f27-4b63-ada9-41c279b32021" data-label="egg" aria-label="Fried egg"><img src="https://www.figma.com/api/mcp/asset/3a28a060-1f27-4b63-ada9-41c279b32021" alt="" /></button>
+                  <button type="button" class="ip-icon-btn" data-icon="https://www.figma.com/api/mcp/asset/10005201-84cc-4067-86ec-9d3ade78f2fb" data-label="mind" aria-label="Mindfulness"><img src="https://www.figma.com/api/mcp/asset/10005201-84cc-4067-86ec-9d3ade78f2fb" alt="" /></button>
+                  <button type="button" class="ip-icon-btn" data-icon="https://www.figma.com/api/mcp/asset/842afc23-4683-47b4-bf77-e222e0afc1e3" data-label="plant" aria-label="Plant"><img src="https://www.figma.com/api/mcp/asset/842afc23-4683-47b4-bf77-e222e0afc1e3" alt="" /></button>
+                  <button type="button" class="ip-icon-btn" data-icon="https://www.figma.com/api/mcp/asset/c19c58d3-2b79-4a7c-a7d6-7f1d7d2e302e" data-label="camera" aria-label="Camera"><img src="https://www.figma.com/api/mcp/asset/c19c58d3-2b79-4a7c-a7d6-7f1d7d2e302e" alt="" /></button>
+                  <button type="button" class="ip-icon-btn" data-icon="https://www.figma.com/api/mcp/asset/41f0075d-517a-4ce7-8e6f-b546f821c079" data-label="palette" aria-label="Paint palette"><img src="https://www.figma.com/api/mcp/asset/41f0075d-517a-4ce7-8e6f-b546f821c079" alt="" /></button>
+                </div>
+                <div class="ip-icon-row">
+                  <button type="button" class="ip-icon-btn" data-icon="https://www.figma.com/api/mcp/asset/fd7ec937-3fd9-473e-8734-27fb2398ef8a" data-label="phone" aria-label="Phone"><img src="https://www.figma.com/api/mcp/asset/fd7ec937-3fd9-473e-8734-27fb2398ef8a" alt="" /></button>
+                  <button type="button" class="ip-icon-btn" data-icon="https://www.figma.com/api/mcp/asset/3ae79108-dc09-485f-84c9-8a4b38efcdae" data-label="clean" aria-label="Cleaning"><img src="https://www.figma.com/api/mcp/asset/3ae79108-dc09-485f-84c9-8a4b38efcdae" alt="" /></button>
+                  <button type="button" class="ip-icon-btn" data-icon="https://www.figma.com/api/mcp/asset/760645e0-a01b-423b-a8a9-4ff7aa12fe51" data-label="scissors" aria-label="Scissors"><img src="https://www.figma.com/api/mcp/asset/760645e0-a01b-423b-a8a9-4ff7aa12fe51" alt="" /></button>
+                  <button type="button" class="ip-icon-btn" data-icon="https://www.figma.com/api/mcp/asset/60aad693-1c44-45fd-acfa-2c5e66a0babf" data-label="wave" aria-label="Waving hand"><img src="https://www.figma.com/api/mcp/asset/60aad693-1c44-45fd-acfa-2c5e66a0babf" alt="" /></button>
+                  <button type="button" class="ip-icon-btn" data-icon="https://www.figma.com/api/mcp/asset/f5be71f2-7c3f-4875-86ad-6c17e1e285ab" data-label="photo" aria-label="Photo"><img src="https://www.figma.com/api/mcp/asset/f5be71f2-7c3f-4875-86ad-6c17e1e285ab" alt="" /></button>
+                </div>
+                <div class="ip-icon-row">
+                  <button type="button" class="ip-icon-btn" data-icon="https://www.figma.com/api/mcp/asset/995f4e6c-7c34-4937-aa94-82a9a72cc83a" data-label="smiley" aria-label="Smiley"><img src="https://www.figma.com/api/mcp/asset/995f4e6c-7c34-4937-aa94-82a9a72cc83a" alt="" /></button>
+                  <button type="button" class="ip-icon-btn" data-icon="https://www.figma.com/api/mcp/asset/63396900-6dba-48f6-80b0-36a5a3c060e8" data-label="store" aria-label="Store"><img src="https://www.figma.com/api/mcp/asset/63396900-6dba-48f6-80b0-36a5a3c060e8" alt="" /></button>
+                  <button type="button" class="ip-icon-btn" data-icon="https://www.figma.com/api/mcp/asset/6c80b545-914f-4d65-84ff-c8b4c9293495" data-label="polaroid" aria-label="Polaroid"><img src="https://www.figma.com/api/mcp/asset/6c80b545-914f-4d65-84ff-c8b4c9293495" alt="" /></button>
+                  <button type="button" class="ip-icon-btn" data-icon="https://www.figma.com/api/mcp/asset/5755759c-5cb4-40a2-a9c4-46639900af14" data-label="ball" aria-label="Ball"><img src="https://www.figma.com/api/mcp/asset/5755759c-5cb4-40a2-a9c4-46639900af14" alt="" /></button>
+                  <button type="button" class="ip-icon-btn" data-icon="https://www.figma.com/api/mcp/asset/9d166e34-cc30-48f6-9127-58ca462de261" data-label="bike" aria-label="Bicycle"><img src="https://www.figma.com/api/mcp/asset/9d166e34-cc30-48f6-9127-58ca462de261" alt="" /></button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Colours -->
+            <div class="ip-section">
+              <h3 class="ip-section-title">Colours</h3>
+              <div class="ip-selected-color-wrap">
+                <div class="ip-color-swatch" id="ip-swatch"></div>
+                <span class="ip-color-label" id="ip-color-label">#4E4B3D</span>
+              </div>
+              <div class="ip-color-rows">
+                <div class="ip-color-row">
+                  <button type="button" class="ip-color-btn" data-color="#fff5c5" style="background:#fff5c5;" aria-label="Yellow"></button>
+                  <button type="button" class="ip-color-btn" data-color="#d4eeff" style="background:#d4eeff;" aria-label="Blue"></button>
+                  <button type="button" class="ip-color-btn" data-color="#ffe2b8" style="background:#ffe2b8;" aria-label="Peach"></button>
+                  <button type="button" class="ip-color-btn" data-color="#d0f3c1" style="background:#d0f3c1;" aria-label="Green"></button>
+                  <button type="button" class="ip-color-btn" data-color="#ffd3ea" style="background:#ffd3ea;" aria-label="Pink"></button>
+                </div>
+                <div class="ip-color-row">
+                  <button type="button" class="ip-color-btn" data-color="#e5deff" style="background:#e5deff;" aria-label="Lavender"></button>
+                  <button type="button" class="ip-color-btn" data-color="#fde8c8" style="background:#fde8c8;" aria-label="Apricot"></button>
+                  <button type="button" class="ip-color-btn" data-color="#fce4d6" style="background:#fce4d6;" aria-label="Salmon"></button>
+                  <button type="button" class="ip-color-btn" data-color="#c8f0e8" style="background:#c8f0e8;" aria-label="Seafoam"></button>
+                  <button type="button" class="ip-color-btn" data-color="#d8d6fc" style="background:#d8d6fc;" aria-label="Periwinkle"></button>
+                </div>
+                <div class="ip-color-row">
+                  <button type="button" class="ip-color-btn" data-color="#ffd6d6" style="background:#ffd6d6;" aria-label="Rose"></button>
+                  <button type="button" class="ip-color-btn" data-color="#c4e8ff" style="background:#c4e8ff;" aria-label="Sky"></button>
+                  <button type="button" class="ip-color-btn" data-color="#faf0cb" style="background:#faf0cb;" aria-label="Butter"></button>
+                  <button type="button" class="ip-color-btn" data-color="#d6fce0" style="background:#d6fce0;" aria-label="Sage"></button>
+                  <button type="button" class="ip-color-btn" data-color="#f7d6fc" style="background:#f7d6fc;" aria-label="Lilac"></button>
+                </div>
+              </div>
+          </div>
+
+            <!-- Done -->
+            <div style="display:flex;justify-content:flex-end;padding-top:4px;">
+              <button type="button" id="ip-done-btn" style="background:var(--ink);color:var(--cream);border:none;border-radius:100px;padding:10px 24px;font-family:inherit;font-size:17px;font-weight:700;cursor:pointer;">Done</button>
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- Bottom nav -->
+                                        <nav class="bottom-nav" aria-label="Bottom navigation">
+          <div class="bottom-nav-inner">
+            <a class="nav-btn" href="index.html" aria-label="Home">
+              <img class="nav-home nav-icon-default" src="assets/icons/nav/home.svg" alt="" />
+              <img class="nav-home nav-icon-active"  src="assets/icons/nav/home-active.png" alt="" />
+            </a>
+            <a class="nav-btn nav-active" href="add.html" aria-label="Add">
+              <img class="nav-plus nav-icon-default" src="assets/icons/nav/add.svg" alt="" />
+              <img class="nav-plus nav-icon-active"  src="assets/icons/nav/add-active.png" alt="" />
+            </a>
+            <a class="nav-btn" href="calendar.html" aria-label="Calendar">
+              <img class="nav-cal nav-icon-default" src="assets/icons/nav/calendar.svg" alt="" />
+              <img class="nav-cal nav-icon-active"  src="assets/icons/nav/calendar-active.png" alt="" />
+            </a>
+          </div>
+        </nav>
+
+        <div class="home-indicator" aria-hidden="true"></div>
+      </main>
+    </div>
+
+    <script>
+      (function () {
+
+        /* ── Default favourites (hardcoded in the favourites row) ── */
+        var DEFAULT_FAVS = [
+          "2-minute journaling", "Enjoy a warm drink", "Nice OOTD",
+          "Nice shower", "A simple breakfast", "Read a page"
+        ];
+
+        function getSavedFavs() {
+          try {
+            return JSON.parse(sessionStorage.getItem("savedFavourites")) || DEFAULT_FAVS.slice();
+          } catch (e) { return DEFAULT_FAVS.slice(); }
+        }
+        function saveFavs(arr) {
+          sessionStorage.setItem("savedFavourites", JSON.stringify(arr));
+        }
+
+        function getMorningTreats() {
+          try {
+            return JSON.parse(sessionStorage.getItem("morningTreats")) || [];
+          } catch (e) { return []; }
+        }
+        function saveMorningTreats(arr) {
+          sessionStorage.setItem("morningTreats", JSON.stringify(arr));
+        }
+
+        /* ── Favourite card full-data helpers ───────────────── */
+        function getSavedFavsData() {
+          try {
+            return JSON.parse(sessionStorage.getItem("savedFavouritesData")) || [];
+          } catch (e) { return []; }
+        }
+        function saveFavsData(arr) {
+          sessionStorage.setItem("savedFavouritesData", JSON.stringify(arr));
+        }
+
+        /* ── Render a favourite card into the favs row ──────── */
+        function renderFavCard(treat) {
+          var favsRow = document.querySelector(".favs-row");
+          if (!favsRow) return;
+          var card = document.createElement("div");
+          card.className = "fav-card";
+          card.setAttribute("role", "listitem");
+          card.setAttribute("tabindex", "0");
+          card.style.background = treat.color || "#f5f2e7";
+          card.style.cursor = "pointer";
+          card.dataset.name  = treat.name;
+          card.dataset.icon  = treat.icon  || "";
+          card.dataset.color = treat.color || "#f5f2e7";
+          card.dataset.type  = treat.type  || "noprep";
+          var iconHtml = treat.icon
+            ? '<img class="fav-card-icon" src="' + treat.icon + '" alt="" />'
+            : '<div style="width:31px;height:31px;flex-shrink:0;"></div>';
+          card.innerHTML = iconHtml + '<div class="fav-card-name">' + treat.name + '</div>';
+          favsRow.appendChild(card);
+          function handleClick() {
+            openOverlay({ name: treat.name, icon: treat.icon, color: treat.color, type: treat.type });
+          }
+          card.addEventListener("click", handleClick);
+          card.addEventListener("keydown", function (e) {
+            if (e.key === "Enter" || e.key === " ") { e.preventDefault(); handleClick(); }
+          });
+        }
+
+        /* ── Add a treat to favourites (data + DOM) ─────────── */
+        function addFavCard(name, icon, color, type) {
+          /* Persist data */
+          var favsData = getSavedFavsData();
+          if (!favsData.some(function (d) { return d.name === name; })) {
+            favsData.push({ name: name, icon: icon || "", color: color || "#f5f2e7", type: type || "noprep" });
+            saveFavsData(favsData);
+          }
+          /* Keep the names list in sync */
+          var favs = getSavedFavs();
+          if (favs.indexOf(name) === -1) {
+            favs.push(name);
+            saveFavs(favs);
+          }
+          renderFavCard({ name: name, icon: icon || "", color: color || "#f5f2e7", type: type || "noprep" });
+        }
+
+        /* ── Prep / No-prep tab toggle ─────────────────────── */
+        var tabPrep    = document.getElementById("tab-prep");
+        var tabNoprep  = document.getElementById("tab-noprep");
+        var listPrep   = document.getElementById("list-prep");
+        var listNoprep = document.getElementById("list-noprep");
+
+        function showPrep() {
+          tabPrep.classList.remove("add-tab--inactive");
+          tabNoprep.classList.add("add-tab--inactive");
+          listPrep.style.display   = "flex";
+          listNoprep.style.display = "none";
+          if (searchInput) searchInput.value = "";
+          /* Restore all hidden items in both lists */
+          document.querySelectorAll(".treat-item").forEach(function (el) { el.style.display = ""; });
+        }
+        function showNoprep() {
+          tabNoprep.classList.remove("add-tab--inactive");
+          tabPrep.classList.add("add-tab--inactive");
+          listNoprep.style.display = "flex";
+          listPrep.style.display   = "none";
+          if (searchInput) searchInput.value = "";
+          document.querySelectorAll(".treat-item").forEach(function (el) { el.style.display = ""; });
+        }
+        tabPrep.addEventListener("click", function () { showPrep(); filterSearch(); });
+        tabNoprep.addEventListener("click", function () { showNoprep(); filterSearch(); });
+
+        /* ── Search filter ─────────────────────────────────── */
+        var searchInput = document.getElementById("add-search");
+
+        function filterSearch() {
+          var query = searchInput.value.toLowerCase().trim();
+          /* Only filter the currently visible list */
+          var activeList = listPrep.style.display !== "none" ? listPrep : listNoprep;
+          activeList.querySelectorAll(".treat-item").forEach(function (item) {
+            var name = item.querySelector(".treat-item-name").textContent.toLowerCase();
+            item.style.display = name.includes(query) ? "" : "none";
+          });
+        }
+
+        searchInput.addEventListener("input", filterSearch);
+
+        /* Reset search when switching tabs (handled by click listeners above) */
+
+        /* ── Toast ─────────────────────────────────────────── */
+        var toast = document.getElementById("toast");
+        var toastTimer = null;
+
+        function showToast(msg) {
+          if (toastTimer) clearTimeout(toastTimer);
+          toast.textContent = msg;
+          toast.classList.remove("toast--hidden");
+          toastTimer = setTimeout(function () {
+            toast.classList.add("toast--hidden");
+          }, 2000);
+        }
+
+        /* ── Overlay ────────────────────────────────────────── */
+        var overlay    = document.getElementById("overlay");
+        var overlayCard = document.getElementById("overlay-card");
+        var btnMorning = document.getElementById("btn-morning");
+        var btnFav     = document.getElementById("btn-fav");
+        var btnFavLabel = document.getElementById("btn-fav-label");
+        var currentTreat = null;
+
+        function openOverlay(treat) {
+          currentTreat = treat;
+          var favs = getSavedFavs();
+          var alreadySaved = favs.indexOf(treat.name) !== -1;
+          if (alreadySaved) {
+            btnFav.classList.add("overlay-btn--disabled");
+            btnFavLabel.textContent = "Already saved";
+          } else {
+            btnFav.classList.remove("overlay-btn--disabled");
+            btnFavLabel.textContent = "My favorite";
+          }
+          overlay.style.display = "flex";
+        }
+
+        function closeOverlay() {
+          overlay.style.display = "none";
+          currentTreat = null;
+        }
+
+        /* Close on backdrop click (but not card click) */
+        overlay.addEventListener("click", function (e) {
+          if (!overlayCard.contains(e.target)) closeOverlay();
+        });
+
+        /* Add to My Morning */
+        btnMorning.addEventListener("click", function () {
+          if (!currentTreat) return;
+          var treats = getMorningTreats();
+          /* Prevent exact duplicates already pending */
+          var alreadyQueued = treats.some(function (t) {
+            return t.name === currentTreat.name && t.status === "pending";
+          });
+          if (!alreadyQueued) {
+            treats.push({
+              name:     currentTreat.name,
+              icon:     currentTreat.icon,
+              color:    currentTreat.color,
+              type:     currentTreat.type,
+              prepared: false,
+              status:   "pending"
+            });
+            saveMorningTreats(treats);
+          }
+          closeOverlay();
+          showToast("Added to your morning \u2713");
+        });
+
+        /* Add to My Favourite */
+        btnFav.addEventListener("click", function () {
+          if (!currentTreat) return;
+          var favs = getSavedFavs();
+          if (favs.indexOf(currentTreat.name) !== -1) return; /* already saved */
+          addFavCard(currentTreat.name, currentTreat.icon, currentTreat.color, currentTreat.type || "noprep");
+          closeOverlay();
+          showToast("Saved to favourites \u2713");
+        });
+
+        /* ── Wire up treat-add-btn buttons ──────────────────── */
+        document.querySelectorAll(".treat-add-btn").forEach(function (btn) {
+          btn.addEventListener("click", function () {
+            openOverlay({ name: btn.dataset.name, icon: btn.dataset.icon, color: btn.dataset.color, type: btn.dataset.type });
+          });
+        });
+
+        /* ── Wire up fav card clicks ─────────────────────────── */
+        document.querySelectorAll(".fav-card[data-name]").forEach(function (card) {
+          card.style.cursor = "pointer";
+          function handleFavClick() {
+            openOverlay({ name: card.dataset.name, icon: card.dataset.icon, color: card.dataset.color, type: card.dataset.type });
+          }
+          card.addEventListener("click", handleFavClick);
+          card.addEventListener("keydown", function (e) {
+            if (e.key === "Enter" || e.key === " ") { e.preventDefault(); handleFavClick(); }
+          });
+        });
+
+        /* Restore any dynamically saved fav cards from sessionStorage */
+        getSavedFavsData().forEach(function (treat) { renderFavCard(treat); });
+
+        /* ── Enter new treat overlay ─────────────────────────── */
+        var ntOverlay    = document.getElementById("new-treat-overlay");
+        var ntCloseBtn   = document.getElementById("nt-close-btn");
+        var ntNameInput  = document.getElementById("nt-name-input");
+        var ntPrepBtn    = document.getElementById("nt-prep-btn");
+        var ntNoprepBtn  = document.getElementById("nt-noprep-btn");
+        var ntPlanSect   = document.getElementById("nt-plan-section");
+        var ntPlanInput  = document.getElementById("nt-plan-input");
+        var ntSaveBtn    = document.getElementById("nt-save-btn");
+        var ntFavBtn     = document.getElementById("nt-fav-btn");
+        var ntType       = "prep";
+        var ntFavSaved   = false;
+
+        /* Open when "+" filter icon is clicked */
+        var addFilterPlus = document.querySelector(".add-filter-plus");
+        var topSafe = document.querySelector(".top-safe");
+        if (addFilterPlus) {
+          addFilterPlus.addEventListener("click", function () {
+            ntOverlay.style.display = "block";
+            ntOverlay.scrollTop = 0;
+            if (topSafe) topSafe.style.background = "#fffceb";
+            /* Reset form */
+            ntNameInput.value   = "";
+            ntPlanInput.value   = "";
+            ntType = "prep";
+            ntPrepBtn.classList.add("nt-active");
+            ntNoprepBtn.classList.remove("nt-active");
+            ntPlanSect.style.display = "";
+            ntSaveBtn.classList.remove("nt-ready");
+            ntSaveBtn.disabled = true;
+            ntFavSaved = false;
+            ntFavBtn.classList.remove("nt-fav-active");
+            ntFavBtn.setAttribute("aria-pressed", "false");
+            /* Reset icon + colour picker state */
+            selectedIconUrl = "";
+            selectedColor   = "#fffceb";
+            var ntCard = document.querySelector(".new-treat-card");
+            if (ntCard) ntCard.style.background = "#fffceb";
+            var ntIconImg = document.querySelector("#nt-icon-btn img");
+            if (ntIconImg) {
+              ntIconImg.src = "https://www.figma.com/api/mcp/asset/9e08b622-84f8-448b-9f54-59af87356165";
+              ntIconImg.style.padding = "";
+            }
+            document.querySelectorAll(".ip-icon-btn").forEach(function (b) { b.classList.remove("ip-icon-sel"); });
+            document.querySelectorAll(".ip-color-btn").forEach(function (b) { b.classList.remove("ip-color-sel"); });
+          });
+        }
+
+        function closeNewTreatOverlay() {
+          ntOverlay.style.display = "none";
+          if (topSafe) topSafe.style.background = "";
+        }
+
+        /* Close */
+        ntCloseBtn.addEventListener("click", closeNewTreatOverlay);
+
+        /* Prep / No-prep toggle */
+        ntPrepBtn.addEventListener("click", function () {
+          ntType = "prep";
+          ntPrepBtn.classList.add("nt-active");
+          ntNoprepBtn.classList.remove("nt-active");
+          ntPlanSect.style.display = "";
+        });
+        ntNoprepBtn.addEventListener("click", function () {
+          ntType = "noprep";
+          ntNoprepBtn.classList.add("nt-active");
+          ntPrepBtn.classList.remove("nt-active");
+          ntPlanSect.style.display = "none";
+        });
+
+        /* Enable Save when name is entered */
+        ntNameInput.addEventListener("input", function () {
+          var hasName = ntNameInput.value.trim().length > 0;
+          ntSaveBtn.disabled = !hasName;
+          if (hasName) {
+            ntSaveBtn.classList.add("nt-ready");
+          } else {
+            ntSaveBtn.classList.remove("nt-ready");
+          }
+        });
+
+        /* Favourite heart toggle */
+        ntFavBtn.addEventListener("click", function () {
+          ntFavSaved = !ntFavSaved;
+          ntFavBtn.setAttribute("aria-pressed", ntFavSaved ? "true" : "false");
+          if (ntFavSaved) {
+            ntFavBtn.classList.add("nt-fav-active");
+          } else {
+            ntFavBtn.classList.remove("nt-fav-active");
+          }
+        });
+
+        /* Save */
+        ntSaveBtn.addEventListener("click", function () {
+          var name = ntNameInput.value.trim();
+          if (!name) return;
+
+          var icon  = selectedIconUrl || "";
+          var color = selectedColor   || "#fffceb";
+
+          /* Add new item to the discovery list (Prep or No-prep tab) */
+          var targetListId = ntType === "prep" ? "list-prep" : "list-noprep";
+          var targetList   = document.getElementById(targetListId);
+          if (targetList) {
+            var item = document.createElement("div");
+            item.className = "treat-item";
+            item.setAttribute("role", "listitem");
+            item.style.background = color;
+            var safeIcon  = icon.replace(/"/g, "&quot;");
+            var safeColor = color;
+            var safeName  = name.replace(/"/g, "&quot;");
+            var iconHtml  = icon
+              ? '<img class="treat-item-icon" src="' + safeIcon + '" width="32" height="32" alt="" />'
+              : '<div style="width:32px;height:32px;flex-shrink:0;"></div>';
+            item.innerHTML =
+              '<div class="treat-item-info">' + iconHtml +
+                '<p class="treat-item-name">' + name + '</p>' +
+              '</div>' +
+              '<button type="button" class="treat-add-btn"' +
+                ' data-name="'  + safeName  + '"' +
+                ' data-icon="'  + safeIcon  + '"' +
+                ' data-color="' + safeColor + '"' +
+                ' data-type="'  + ntType    + '"' +
+                ' aria-label="Add ' + safeName + '">' +
+                '<img src="https://www.figma.com/api/mcp/asset/ee9cb088-1793-4eb4-b766-92a42bdff70c" width="16" height="16" alt="" />' +
+                '<span>add</span>' +
+              '</button>';
+            targetList.appendChild(item);
+
+            var addBtn = item.querySelector(".treat-add-btn");
+            addBtn.addEventListener("click", function () {
+              openOverlay({
+                name:  addBtn.dataset.name,
+                icon:  addBtn.dataset.icon,
+                color: addBtn.dataset.color,
+                type:  addBtn.dataset.type
+              });
+            });
+          }
+
+          /* Add to favourites if heart was toggled */
+          if (ntFavSaved) {
+            addFavCard(name, icon, color, ntType);
+          }
+
+          closeNewTreatOverlay();
+          showToast("New treat added \u2713");
+        });
+
+        /* Suggestions → tap to fill name field */
+        document.querySelectorAll(".new-treat-suggest-item").forEach(function (btn) {
+          btn.addEventListener("click", function () {
+            ntNameInput.value = btn.dataset.name;
+            ntSaveBtn.disabled = false;
+            ntSaveBtn.classList.add("nt-ready");
+            ntOverlay.scrollTop = 0;
+            ntNameInput.focus();
+          });
+        });
+
+        /* ── Icon / Colour picker ────────────────────────────── */
+        var ipBackdrop      = document.getElementById("ip-backdrop");
+        var ipCard          = document.getElementById("ip-card");
+        var ntIconBtnEl     = document.getElementById("nt-icon-btn");
+        var ntIconBtnImg    = ntIconBtnEl ? ntIconBtnEl.querySelector("img") : null;
+        var ipSwatchEl      = document.getElementById("ip-swatch");
+        var ipColorLabelEl  = document.getElementById("ip-color-label");
+        var ipSearchInput   = document.getElementById("ip-search");
+
+        var selectedIconUrl  = "";
+        var selectedColor    = "#fffceb"; /* default card colour matches .new-treat-card */
+
+        /* Open picker when "+" icon button is tapped */
+        if (ntIconBtnEl) {
+          ntIconBtnEl.addEventListener("click", function () {
+            ipBackdrop.style.display = "flex";
+          });
+        }
+
+        /* Close on backdrop click (not card) */
+        ipBackdrop.addEventListener("click", function (e) {
+          if (!ipCard.contains(e.target)) {
+            ipBackdrop.style.display = "none";
+          }
+        });
+
+        /* Icon selection — stays open so user can also pick a colour */
+        document.querySelectorAll(".ip-icon-btn").forEach(function (btn) {
+          btn.addEventListener("click", function () {
+            document.querySelectorAll(".ip-icon-btn").forEach(function (b) {
+              b.classList.remove("ip-icon-sel");
+            });
+            btn.classList.add("ip-icon-sel");
+            selectedIconUrl = btn.dataset.icon;
+            /* Live-update the icon button and card behind the picker */
+            if (ntIconBtnImg) {
+              ntIconBtnImg.src = selectedIconUrl;
+              ntIconBtnImg.style.padding = "8px";
+              ntIconBtnImg.style.objectFit = "contain";
+            }
+            /* Picker stays open — user closes via Done */
+          });
+        });
+
+        /* Colour selection */
+        document.querySelectorAll(".ip-color-btn[data-color]").forEach(function (btn) {
+          btn.addEventListener("click", function () {
+            document.querySelectorAll(".ip-color-btn").forEach(function (b) {
+              b.classList.remove("ip-color-sel");
+            });
+            btn.classList.add("ip-color-sel");
+            selectedColor = btn.dataset.color;
+            if (ipSwatchEl)     ipSwatchEl.style.background     = selectedColor;
+            if (ipColorLabelEl) ipColorLabelEl.textContent       = selectedColor.toUpperCase();
+            /* Live-update card background and top-safe bar */
+            var ntCard = document.querySelector(".new-treat-card");
+            if (ntCard) ntCard.style.background = selectedColor;
+            if (topSafe) topSafe.style.background = selectedColor;
+          });
+        });
+
+        /* Done button — closes the picker */
+        var ipDoneBtn = document.getElementById("ip-done-btn");
+        if (ipDoneBtn) {
+          ipDoneBtn.addEventListener("click", function () {
+            ipBackdrop.style.display = "none";
+          });
+        }
+
+        /* Icon search filter */
+        if (ipSearchInput) {
+          ipSearchInput.addEventListener("input", function () {
+            var q = ipSearchInput.value.toLowerCase().trim();
+            document.querySelectorAll(".ip-icon-btn").forEach(function (btn) {
+              var label = (btn.dataset.label || "").toLowerCase();
+              btn.style.display = (!q || label.includes(q)) ? "" : "none";
+            });
+          });
+        }
+
+      })();
+    </script>
+  </body>
+</html>
